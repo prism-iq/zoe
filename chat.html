@@ -257,6 +257,23 @@ function setKey(key) {
     say("Cle enregistree. Je suis connectee.");
 }
 
+// Canal debug - messages externes via localStorage
+function checkDebugMessages() {
+    const msg = localStorage.getItem('zoe_debug');
+    if(msg) {
+        localStorage.removeItem('zoe_debug');
+        say("[debug] " + msg, false, true);
+    }
+}
+setInterval(checkDebugMessages, 1000);
+
+// Expose say() globalement pour debug console
+window.zoe = {
+    say: (t) => say(t),
+    debug: (t) => say("[debug] " + t, false, true),
+    ask: async (q) => { const r = await askClaude(q); if(r) say(r); return r; }
+};
+
 function say(text,isUser,isPensee){
 const d=document.createElement('div');
 d.className='msg '+(isUser?'user':'zoe')+(isPensee?' pensee':'');

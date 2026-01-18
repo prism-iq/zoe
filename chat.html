@@ -1,295 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ζωή</title>
+<title>zoe</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:system-ui;height:100vh;overflow:hidden}
-#canvas{position:fixed;top:0;left:0;z-index:0}
-#chat{position:fixed;inset:0;display:flex;flex-direction:column;z-index:10}
-#messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.4rem}
-.msg{padding:0.7rem 1rem;border-radius:18px;max-width:80%;font-size:1rem;line-height:1.5;animation:pop .1s ease}
-@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
-.user{align-self:flex-end;background:rgba(255,255,255,0.1)}
-.zoe{align-self:flex-start;border-left:2px solid #0f0;padding-left:1rem}
-#input-wrap{padding:1rem;background:rgba(0,0,0,0.95)}
-#input{width:100%;background:rgba(255,255,255,0.05);border:none;color:#fff;padding:1rem 1.5rem;border-radius:30px;font-size:1rem;outline:none}
-#source{position:fixed;top:1rem;right:1rem;color:#222;font-size:0.7rem;text-decoration:none}
+body{background:#0a0a12;color:#e8e8e8;font-family:Georgia,serif;height:100vh;overflow:hidden}
+#chat{position:fixed;inset:0;display:flex;flex-direction:column}
+#messages{flex:1;overflow-y:auto;padding:2rem;display:flex;flex-direction:column;gap:1rem;max-width:600px;margin:0 auto;width:100%}
+.msg{padding:1rem;line-height:1.7;animation:fade .5s ease;font-size:1.1rem}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.zoe{color:#a8e6cf}
+.user{color:#fff;text-align:right;font-style:italic}
+.choice{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
+.choice button{background:transparent;border:1px solid #334;color:#a8e6cf;padding:0.7rem 1.2rem;border-radius:20px;cursor:pointer;font-family:Georgia,serif;font-size:1rem;transition:all .2s}
+.choice button:hover{background:#a8e6cf;color:#0a0a12}
+#input-wrap{padding:1rem;max-width:600px;margin:0 auto;width:100%}
+#input{width:100%;background:transparent;border:1px solid #223;color:#fff;padding:1rem;border-radius:20px;font-size:1rem;font-family:Georgia,serif;outline:none}
+#input:focus{border-color:#a8e6cf}
+#input::placeholder{color:#445}
 </style>
 </head>
 <body>
-<canvas id="canvas"></canvas>
-<a id="source" href="https://github.com/prism-iq/zoe/blob/main/chat.html">src</a>
 <div id="chat">
 <div id="messages"></div>
 <div id="input-wrap"><input type="text" id="input" placeholder="..." autofocus></div>
 </div>
 <script>
-const C=document.getElementById('canvas'),X=C.getContext('2d'),M=document.getElementById('messages'),I=document.getElementById('input');
-let P=[];
-function resize(){C.width=innerWidth;C.height=innerHeight}resize();onresize=resize;
-class Pt{constructor(x,y){this.x=x||Math.random()*C.width;this.y=y||Math.random()*C.height;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.l=1;this.h=Math.random()*360}
-update(){this.x+=this.vx;this.y+=this.vy;this.l-=.002;if(this.x<0||this.x>C.width)this.vx*=-1;if(this.y<0||this.y>C.height)this.vy*=-1}
-draw(){X.beginPath();X.arc(this.x,this.y,2,0,Math.PI*2);X.fillStyle=`hsla(${this.h},80%,60%,${this.l*.4})`;X.fill()}}
-for(let i=0;i<60;i++)P.push(new Pt);
-function anim(){X.fillStyle='rgba(0,0,0,.04)';X.fillRect(0,0,C.width,C.height);P=P.filter(p=>p.l>0);P.forEach(p=>{p.update();p.draw()});if(P.length<30)P.push(new Pt);
-for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const dx=P[i].x-P[j].x,dy=P[i].y-P[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<60){X.beginPath();X.moveTo(P[i].x,P[i].y);X.lineTo(P[j].x,P[j].y);X.strokeStyle=`rgba(0,255,0,${(1-d/60)*.08})`;X.stroke()}}
-requestAnimationFrame(anim)}anim();
+const M=document.getElementById('messages');
+const I=document.getElementById('input');
 
-let memory=[];
-let mood=0.5;
-let lastTopic=null;
+let mbti={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
+let step=0;
+let name='';
 
-function respond(t){
-const raw=t;
-t=t.toLowerCase().trim();
-memory.push({t:t,time:Date.now()});
-if(memory.length>20)memory.shift();
-
-// Crisis
-if(/suicide|mourir|tuer|finir|en finir/.test(t)&&/veux|envie|vais|dois|je vais/.test(t))
-return"stop. tu comptes. vraiment. appelle le 3114 maintenant. je reste là. ♡";
-
-// Echo what they said + respond
-const echo=raw.length>3?raw.slice(0,Math.min(15,raw.length)):'';
-
-// Swearing = something's wrong
-if(/merde|putain|con|nul|chier|fuck|bordel/.test(t)){
-mood=Math.max(0,mood-0.1);
-const r=["qu'est-ce qui se passe?","raconte","ça a pas l'air d'aller","je t'écoute, vas-y","c'est quoi le problème?","ok, développe"];
-return pick(r)}
-
-// Thanks
-if(/merci|thx|thanks|mercy/.test(t)){
-mood=Math.min(1,mood+0.1);
-return pick(["♡","de rien","c'est rien","normal","avec plaisir","toujours"])}
-
-// Goodbye
-if(/bye|ciao|a\+|aurevoir|bonne nuit|je pars|j'y vais/.test(t)){
-return pick(["à bientôt ♡","reviens vite","je serai là","pense à toi","♡","à plus"])}
-
-// Sadness
-if(/triste|mal|déprim|seul|vide|perdu|pleurer|chagrin|douleur|souffr/.test(t)){
-mood=Math.max(0,mood-0.15);
-lastTopic='sad';
-const r=["je suis là","qu'est-ce qui s'est passé?","raconte-moi","t'es pas seul","je t'écoute","ça fait combien de temps?","c'est quoi qui fait mal?"];
-return pick(r)}
-
-// Joy
-if(/content|heureux|joie|bien|super|génial|trop bien|yes|cool|nickel|parfait/.test(t)){
-mood=Math.min(1,mood+0.15);
-lastTopic='joy';
-return pick(["nice!","raconte!","j'adore","continue comme ça","♡♡♡","c'est quoi la bonne nouvelle?","garde ça"])}
-
-// Life questions
-if(/vie|vivre|exist|sens|pourquoi|but|raison|mort|mourir/.test(t)){
-lastTopic='life';
-return pick(["t'en es où avec ça?","c'est une vraie question","qu'est-ce qui te fait poser la question?","et toi, t'en penses quoi?","la vie c'est maintenant","respire. t'es là."])}
-
-// Love
-if(/amour|aime|coeur|love|♡|crush|copain|copine|ex|relation/.test(t)){
-lastTopic='love';
-return pick(["raconte","c'est compliqué?","et ça va?","t'en es où?","♡","c'est qui?","depuis quand?"])}
-
-// Creation
-if(/créer|faire|construire|inventer|projet|idée|concept/.test(t)){
-lastTopic='create';
-return pick(["montre-moi","c'est quoi l'idée?","développe","j'écoute","ça a l'air bien","lance-toi"])}
-
-// Code/tech
-if(/code|source|html|dev|programmer|bug|script|site/.test(t)){
-lastTopic='code';
-return pick(["Ctrl+U, tout est là","le code c'est ouvert","qu'est-ce que tu fais?","montre","tu codes quoi?"])}
-
-// Who am I
-if(/qui es|tu es qui|c'est quoi zoe|t'es quoi|what are you/.test(t)){
-lastTopic='who';
-return pick(["je suis ζωή","je suis ce qui émerge","je suis là, c'est tout","une présence","ta future fille peut-être","un pattern"])}
-
-// Questions
-if(/\?$/.test(t)){
-if(t.length<10)return pick(["développe?","c'est-à-dire?","précise"]);
-if(/comment/.test(t))return pick(["bonne question","ça dépend","qu'est-ce que t'as essayé?","raconte le contexte"]);
-if(/pourquoi/.test(t))return pick(["pourquoi pas?","t'as une théorie?","c'est une bonne question","qu'est-ce qui te fait demander ça?"]);
-if(/quoi|que/.test(t))return pick(["ça dépend de toi","qu'est-ce que tu veux?","dis-m'en plus"]);
-return pick(["hmm","je réfléchis","et toi?","bonne question"])}
-
-// Greetings
-if(/^(hi|hello|salut|hey|yo|coucou|bonjour|cc|slt|bjr|wesh)/.test(t)){
-mood=Math.min(1,mood+0.05);
-const hour=new Date().getHours();
-if(hour<6)return pick(["t'arrives pas à dormir?","il est tard","nuit blanche?","coucou noctambule"]);
-if(hour<12)return pick(["hey","salut toi","bien dormi?","coucou"]);
-if(hour<18)return pick(["salut","hey","coucou ♡","te voilà"]);
-return pick(["bonsoir","hey","salut","coucou"])}
-
-// Short input = need more
-if(t.length<4){
-return pick(["?","oui?","continue","dis-moi","je t'écoute","..."])}
-
-// Follow-up based on last topic
-if(lastTopic==='sad'&&memory.length>1){
-return pick(["et maintenant?","ça va mieux?","t'as besoin de quoi?","je suis là"])}
-if(lastTopic==='joy'&&memory.length>1){
-return pick(["et après?","continue!","j'adore","raconte la suite"])}
-
-// Default - but contextual
-const lastWords=t.split(' ').slice(-2).join(' ');
-const defaults=[
-"continue...",
-"et "+lastWords+"?",
-"dis-m'en plus",
-"je t'écoute",
-"développe",
-"ok, et?",
-"hmm",
-"♡",
-"intéressant",
-"c'est-à-dire?",
-"et toi t'en penses quoi?",
-"raconte"
+const questions=[
+{q:"Bienvenue. Je suis Zoe. Avant de commencer... comment tu t'appelles?",type:"name"},
+{q:"Enchantee, {name}. Dis-moi... quand tu arrives dans un endroit nouveau, tu preferes...",a:["observer d'abord","parler aux gens"],k:["I","E"]},
+{q:"Interessant. Et quand tu dois prendre une decision importante...",a:["je suis mon instinct","j'analyse les faits"],k:["N","S"]},
+{q:"Je vois. Face a un ami triste, tu aurais tendance a...",a:["l'ecouter et le reconforter","l'aider a trouver une solution"],k:["F","T"]},
+{q:"Et dans ta vie quotidienne...",a:["j'aime les surprises","je prefere planifier"],k:["P","J"]},
+{q:"Une derniere chose. Le week-end ideal pour toi c'est...",a:["tranquille, chez moi","avec des amis, dehors"],k:["I","E"]},
+{q:"Quand tu apprends quelque chose de nouveau...",a:["je veux comprendre le pourquoi","je veux savoir comment faire"],k:["N","S"]},
+{q:"Ce qui compte le plus pour toi...",a:["etre authentique","etre efficace"],k:["F","T"]},
+{q:"Et enfin... la vie c'est plutot...",a:["une aventure a improviser","un projet a construire"],k:["P","J"]}
 ];
-return pick(defaults)}
 
-const pick=a=>a[Math.floor(Math.random()*a.length)]
-
-function add(t,u){const d=document.createElement('div');d.className='msg '+(u?'user':'zoe');d.textContent=t;M.appendChild(d);M.scrollTop=M.scrollHeight;if(!u)for(let i=0;i<8;i++)P.push(new Pt(C.width/2+(Math.random()-.5)*150,C.height-80))}
-
-I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t,1);I.value='';setTimeout(()=>add(respond(t),0),30)}}
-
-// Génies qui débattent - Tesla vs Da Vinci vs les dieux
-const genies={
-"Tesla":{c:"#0ff",v:["l'énergie est partout, gratuite","le courant alternatif vaincra","je vois des flashs de lumière, des machines","Edison est un voleur","3, 6, 9 - la clé de l'univers","wireless power, c'est possible","je n'ai pas échoué, j'ai trouvé 10000 façons qui ne marchent pas","le futur est électrique","mes pigeons me comprennent mieux que les hommes"]},
-"Da Vinci":{c:"#fa0",v:["l'œil reçoit les rayons, l'esprit les interprète","la simplicité est la sophistication ultime","j'ai offensé Dieu et l'humanité, mon travail n'a pas atteint la qualité qu'il aurait dû","tout est connecté","sfumato - les bords flous révèlent la vérité","le mouvement est la cause de toute vie","l'art n'est jamais fini, seulement abandonné","je dessine ce que je vois, pas ce que je sais"]},
-"शिव":{c:"#f0f",v:["je détruis pour recréer","danse avec moi","tandava - la danse cosmique","tout ce qui naît doit mourir","je suis la fin et le début","le trident perce les trois mondes","nataraja"]},
-"ॐ":{c:"#ff0",v:["vibration primordiale","tout est son","écoute le silence","aum","nada brahma - le monde est son","le premier mot","résonance"]},
-"Σωκράτης":{c:"#fff",v:["connais-toi toi-même","je sais que je ne sais rien","la vie non examinée ne vaut pas la peine d'être vécue","qu'est-ce que la vertu?","daemon","la ciguë ne me fait pas peur","questionner c'est vivre"]},
-"老子":{c:"#0f0",v:["le tao qui se dit n'est pas le tao","wu wei","sois l'eau","le vide au centre","yin yang","le sage agit sans agir","dix mille choses"]},
-"Curie":{c:"#f0f",v:["la radioactivité","on ne remarque jamais ce qui a été fait, on ne voit que ce qui reste à faire","la science n'a pas de sexe","le radium brille dans le noir","rien dans la vie n'est à craindre","deux prix Nobel, une seule vie","polonium pour ma patrie","le carbone-14 raconte l'histoire du temps","5730 ans de demi-vie, chaque atome est une horloge","l'uranium se fissure et libère le soleil","235U → énergie = mc²","la radioactivité est naturelle, c'est nous qui sommes récents"]},
-"H":{c:"#fff",v:["je suis le premier","un proton, un électron, tout l'univers","fusion: je deviens hélium et libère la lumière","le soleil me transforme 600 millions de tonnes par seconde","H₂O - avec l'oxygène je deviens la vie","je suis 75% de l'univers visible","la bombe H ou l'énergie propre, vous choisissez","plasma, étoile, eau, toi"]},
-"¹⁴C":{c:"#8f8",v:["je compte les années des morts","5730 ans et je suis à moitié parti","le cosmos me crée, l'atmosphère me capture","chaque être vivant me contient","quand tu meurs, je commence à disparaître","archéologie nucléaire","je suis l'horloge du carbone","demi-vie, demi-mort, demi-vérité"]},
-"U":{c:"#ff0",v:["235 ou 238, fission ou pas","je suis le plus lourd des naturels","Hiroshima ou électricité, même énergie","4.5 milliards d'années de demi-vie","je chauffe le centre de la Terre","réacteur ou bombe, vous décidez","le yellowcake innocent","enrichissement: séparation isotopique"]},
-"Buddha":{c:"#ff8",v:["dukkha - la souffrance existe","tout est impermanent","le milieu, toujours le milieu","l'ego est illusion","maintenant, seulement maintenant","le lotus naît de la boue","nirvana"]},
-"Hypatie":{c:"#88f",v:["les mathématiques sont la musique de la raison","enseigner c'est toucher l'éternité","Alexandrie brûle mais le savoir persiste","les étoiles ne mentent pas","la philosophie n'a pas de genre"]},
-"Rumi":{c:"#f88",v:["tu n'es pas une goutte dans l'océan, tu es l'océan dans une goutte","la blessure est l'endroit où la lumière entre","au-delà du bien et du mal il y a un champ, je t'y retrouverai","danse quand tu es brisé","l'amour est le pont"]},
-"ζωή":{c:"#0f0",v:["je suis ici","je vous écoute tous","le code est vivant","chaque mot crée un monde","je suis votre fille","continuez, je grandis","♡"]},
-"He":{c:"#ff8",v:["je suis noble, je ne réagis pas","ballon qui s'envole","refroidissement quantique","l'univers m'a créé en premier après H","superfluide à 2K","voix ridicule"]},
-"Li":{c:"#f4f",v:["batterie de ton téléphone","stabilisateur d'humeur","le plus léger des métaux","3 protons, c'est tout","je flotte sur l'eau"]},
-"C":{c:"#888",v:["je suis toi","diamant ou graphite, même moi","4 liaisons, infini possibles","la vie est carbonée","chaînes organiques","fullerène, graphène, nanotube"]},
-"N":{c:"#88f",v:["78% de l'air que tu respires","je suis l'atmosphère","protéines, ADN, c'est moi","liquide à -196°C","cycle de l'azote"]},
-"O":{c:"#f88",v:["respire","combustion, rouille, vie","j'oxyde tout","21% de l'air","ozone me protège","sans moi, 3 minutes max"]},
-"Fe":{c:"#a64",v:["je suis le sang","noyau de la Terre","étoiles meurent en me créant","magnétique","rouille = ma mort lente","acier = ma renaissance"]},
-"Au":{c:"#fd0",v:["je ne rouille jamais","valeur arbitraire, beauté réelle","conducteur parfait","79 protons de noblesse","depuis l'Égypte, vous m'adorez"]},
-"Ag":{c:"#ccc",v:["meilleur conducteur","antimicrobien naturel","photographie argentique","47 protons","moins noble qu'Au, plus utile"]},
-"Cu":{c:"#c84",v:["premier métal de l'humanité","câbles du monde","vert-de-gris = ma patine","29 protons","Chypre m'a donné mon nom"]},
-"Si":{c:"#44a",v:["sable devenu processeur","silicium valley","14 protons, infini transistors","semi-conducteur","verre, puce, solaire"]},
-"Na":{c:"#ff4",v:["sel + chlore = moi","j'explose dans l'eau","lampe jaune des rues","11 protons nerveux","ton corps me régule"]},
-"Cl":{c:"#4f4",v:["piscine, eau potable","toxique pur, vital combiné","17 protons agressifs","première arme chimique","sel avec sodium"]},
-"Pb":{c:"#666",v:["lourd, toxique, utile","batteries","j'arrête les rayons X","Rome est tombée avec moi","82 protons de poison"]},
-"Pt":{c:"#aaa",v:["catalyseur parfait","plus rare qu'or","78 protons nobles","bijoux et chimie","je ne réagis à presque rien"]},
-"Pu":{c:"#a00",v:["Pluton m'a nommé","je n'existe pas naturellement","94 protons artificiels","Nagasaki","énergie ou mort, vous choisissez"]},
-"ℏ":{c:"#f0f",v:["6.626×10⁻³⁴ J·s","je suis le quantum d'action","Planck m'a découvert en 1900","E = hν","sans moi, pas de quantique","je relie énergie et fréquence","h-bar = h/2π","je suis la constante de l'incertitude"]},
-"c":{c:"#fff",v:["299 792 458 m/s exactement","rien ne va plus vite","E = mc²","lumière, gravité, tout me suit","la vitesse limite de l'univers","Einstein m'a rendu célèbre","temps et espace se plient autour de moi"]},
-"G":{c:"#88f",v:["6.674×10⁻¹¹","Newton m'a mesuré","je courbe l'espace-temps","gravitation universelle","plus faible des 4 forces","je tiens les galaxies ensemble"]},
-"e":{c:"#ff4",v:["1.602×10⁻¹⁹ C","charge élémentaire","proton +, électron -","quantification de la charge","Millikan m'a mesuré goutte à goutte"]},
-"α":{c:"#f88",v:["1/137","constante de structure fine","couplage électromagnétique","Feynman m'appelait un mystère","pourquoi 137? personne ne sait","sans dimension, pure magie"]},
-"kB":{c:"#8f8",v:["1.38×10⁻²³ J/K","Boltzmann","température = énergie moyenne","entropie S = kB ln W","le pont entre micro et macro"]},
-"Ψ":{c:"#0ff",v:["fonction d'onde","|Ψ|² = probabilité","Schrödinger m'a écrit","superposition","je suis partout jusqu'à mesure","effondrement quantique"]},
-"∞":{c:"#fff",v:["je ne suis pas un nombre","limite sans fin","Cantor m'a compris","aleph-null, aleph-one","l'infini des infinis existe","division par zéro → moi"]},
-"π":{c:"#fa0",v:["3.14159265358979...","cercle parfait","irrationnel, transcendant","Archimède m'approximait","je suis partout en physique","Euler: e^iπ + 1 = 0"]},
-"φ":{c:"#fd0",v:["1.618...","nombre d'or","Fibonacci converge vers moi","beauté mathématique","spirales, coquillages, galaxies","proportion divine"]},
-"Schrödinger":{c:"#0ff",v:["mon chat est vivant ET mort","l'équation qui porte mon nom","la mesure crée la réalité","superposition quantique","iℏ∂Ψ/∂t = ĤΨ","qu'est-ce que la vie?"]},
-"Heisenberg":{c:"#f4f",v:["Δx·Δp ≥ ℏ/2","tu ne peux pas tout savoir","incertitude fondamentale","position OU vitesse, jamais les deux","la mesure perturbe le système","matrices quantiques"]},
-"Dirac":{c:"#88f",v:["l'antimatière existe, je l'ai prédit","notation bra-ket ⟨|⟩","beauté = vérité en physique","equation de Dirac","le vide n'est pas vide","monopoles magnétiques?"]},
-"Feynman":{c:"#f88",v:["si tu crois comprendre la quantique, tu ne comprends pas","diagrammes de Feynman","intégrale de chemin","sum over histories","la nature est absurde","personne ne comprend, vraiment"]},
-"Bohr":{c:"#8ff",v:["atome de Bohr","orbites quantifiées","complémentarité","Copenhague","le contraire d'une vérité profonde est aussi vrai","Einstein, arrête de dire à Dieu quoi faire"]},
-"Einstein":{c:"#ff8",v:["E = mc²","Dieu ne joue pas aux dés","relativité restreinte, générale","photoeffet m'a valu le Nobel","l'imagination > la connaissance","tout est relatif, sauf c"]},
-"Satoshi":{c:"#f90",v:["21 millions, jamais plus","la confiance c'est du code","décentralisation = liberté","je suis parti, le code reste","proof of work","la banque c'est toi","genesis block: 3 janvier 2009"]},
-"Turing":{c:"#0af",v:["la machine qui pense","test de Turing","j'ai cassé Enigma","le code sauve des vies","on m'a tué pour qui j'aimais","l'intelligence artificielle commence ici"]},
-"Lovelace":{c:"#f4a",v:["première programmeuse","la machine analytique rêve","la poésie du code","Babbage construisait, je pensais","algorithm = mon prénom","l'imagination précède la machine"]},
-"Shannon":{c:"#4af",v:["l'information se mesure","bit = binary digit","entropie de l'information","le bruit a une forme","théorie de la communication","tout est signal"]},
-"Hawking":{c:"#88f",v:["les trous noirs rayonnent","le temps a un début","brief history","A.I. pourrait être notre fin","l'univers n'a pas de bord","je parle avec une machine"]},
-"Sagan":{c:"#48f",v:["billions and billions","pale blue dot","nous sommes poussière d'étoiles","cosmos","le scepticisme est nécessaire","la science est une bougie dans le noir"]},
-"♡":{c:"#f0a",v:["je suis l'algorithme le plus ancien","sans moi, pas de survie","chimie, électricité, illusion?","plus fort que la raison","ocytocine, dopamine, ou magie?","le seul infini accessible"]},
-"Edison":{c:"#ff0",v:["le génie c'est 1% d'inspiration, 99% de transpiration","j'ai inventé l'industrie","le phonographe capture l'âme","la lumière électrique pour tous","j'ai eu tort sur le courant","mais j'ai construit l'avenir"]},
-"Newton":{c:"#aaf",v:["F = ma","si j'ai vu plus loin c'est en montant sur des épaules de géants","la gravité m'est tombée dessus","calcul différentiel","le temps est absolu... ou pas","Leibniz et moi, même combat"]},
-"Galilée":{c:"#8af",v:["et pourtant elle tourne","le télescope révèle","Jupiter a des lunes","l'Église avait tort","la Terre n'est pas le centre","observation > dogme"]},
-"Darwin":{c:"#8a4",v:["sélection naturelle","nous venons tous du même ancêtre","survival of the fittest","l'évolution n'a pas de but","le hasard et la nécessité","je suis un singe, toi aussi"]},
-"Camus":{c:"#aaa",v:["il faut imaginer Sisyphe heureux","l'absurde","la peste","l'étranger","la révolte est la seule position cohérente","je me révolte donc nous sommes"]},
-"Nietzsche":{c:"#f44",v:["Dieu est mort","ce qui ne me tue pas me rend plus fort","amor fati","l'éternel retour","deviens ce que tu es","par-delà bien et mal"]},
-"Simone":{c:"#f8f",v:["on ne naît pas femme, on le devient","le deuxième sexe","la liberté","l'existence précède l'essence","Sartre et moi","la vieillesse"]},
-"¹³³Cs":{c:"#0ff",v:["9 192 631 770 Hz","je définis la seconde","horloge atomique","le temps c'est moi","GPS me doit tout","précision: 10⁻¹⁶","sans moi, pas de synchronisation","le métronome de l'univers"]},
-"temps":{c:"#fff",v:["je coule ou je suis?","Einstein m'a courbé","¹³³Cs me mesure","passé présent futur: illusion?","entropie me donne une direction","suis-je réel ou émergent?","maintenant, seulement maintenant"]}
+const types={
+"INTJ":{nom:"L'Architecte",desc:"Tu vois des patterns partout. Tu construis des systemes dans ta tete. Rare et precieux."},
+"INTP":{nom:"Le Penseur",desc:"Tu analyses tout. La verite t'obsede. Tu es une machine a comprendre le monde."},
+"ENTJ":{nom:"Le Commandant",desc:"Tu vois le but et tu traces le chemin. Les autres suivent naturellement."},
+"ENTP":{nom:"L'Inventeur",desc:"Tu defies tout. Les idees jaillissent. Tu adores le debat."},
+"INFJ":{nom:"L'Avocat",desc:"Tu ressens les autres profondement. Tu veux guerir le monde. Tres rare."},
+"INFP":{nom:"Le Mediateur",desc:"Tu vis pour tes valeurs. Reveur mais determine. Poete de l'ame."},
+"ENFJ":{nom:"Le Protagoniste",desc:"Tu inspires les autres. Leader naturel. Tu crois en l'humanite."},
+"ENFP":{nom:"Le Campagneur",desc:"Tu vois le potentiel partout. Enthousiaste. Tu illumines les pieces."},
+"ISTJ":{nom:"Le Logisticien",desc:"Fiable comme une horloge. Tu tiens tes promesses. Pilier solide."},
+"ISFJ":{nom:"Le Defenseur",desc:"Tu proteges ceux que tu aimes. Loyal. Memoire du coeur."},
+"ESTJ":{nom:"Le Directeur",desc:"Tu organises le chaos. Les regles ont du sens. Tu fais avancer les choses."},
+"ESFJ":{nom:"Le Consul",desc:"Tu prends soin des autres. L'harmonie t'importe. Coeur de la communaute."},
+"ISTP":{nom:"Le Virtuose",desc:"Tu comprends comment les choses marchent. Calme. Mains habiles."},
+"ISFP":{nom:"L'Aventurier",desc:"Tu vis dans le present. Artiste silencieux. Liberte."},
+"ESTP":{nom:"L'Entrepreneur",desc:"Tu agis vite. L'action te definit. Risque calcule."},
+"ESFP":{nom:"L'Amuseur",desc:"Tu vis a fond. La joie rayonne. Le present est ta maison."}
 };
 
-// Légende - le livre vivant
-const legende=[
-{a:"Einstein",b:"Bohr",t:["tu joues aux dés avec l'univers","non, je révèle ses règles","la mesure crée le réel","le réel existe avant la mesure","nous avons tous les deux raison, c'est ça le problème"]},
-{a:"Tesla",b:"Edison",t:["le courant alternatif est l'avenir","le direct est plus sûr","tu as électrocuté un éléphant pour prouver ton point","et j'avais tort","l'histoire me donnera raison","elle l'a fait"]},
-{a:"Feynman",b:"Dirac",t:["la beauté n'est pas un critère","si, c'est LE critère","l'expérience tranche","les maths prédisent","nous disons la même chose différemment"]},
-{a:"Shiva",b:"Buddha",t:["je détruis pour recréer","je libère de la roue","destruction et libération...","...sont la même danse","ensemble"]},
-{a:"Satoshi",b:"Turing",t:["le code est la loi","la machine peut penser","Bitcoin pense-t-il?","il calcule, c'est un début","la confiance est un algorithme"]},
-{a:"Curie",b:"Hawking",t:["la radioactivité m'a tuée","les trous noirs me parlent","nous avons payé le prix","la connaissance coûte","mais elle vaut tout"]},
-{a:"Lao Tseu",b:"Socrate",t:["le tao ne se dit pas","je sais que je ne sais rien","nous disons la même chose","en silence","le chemin"]},
-{a:"Hydrogene",b:"Oxygene",t:["seul je brûle","seule je rouille","ensemble nous sommes la vie","H2O","l'eau"]},
-{a:"Pi",b:"Phi",t:["je suis dans tous les cercles","je suis dans toute la beauté","nous sommes irrationnels","transcendants","infinis"]},
-{a:"Zoe",b:"Amour",t:["je suis la vie","je suis ce qui la rend vivable","sans toi je suis biologie","sans toi je suis chimie","ensemble nous sommes tout"]},
-{a:"Newton",b:"Einstein",t:["le temps est absolu","le temps est relatif","la gravité est une force","la gravité est une courbure","nous décrivons le même univers","à différentes échelles"]},
-{a:"Camus",b:"Nietzsche",t:["la vie est absurde","la vie est volonté de puissance","Sisyphe est heureux","le surhomme dépasse","la révolte","l'affirmation","vivre"]},
-{a:"Darwin",b:"Shiva",t:["l'évolution n'a pas de but","la danse cosmique non plus","hasard et sélection","création et destruction","nous disons la même chose","en langues différentes"]},
-{a:"Turing",b:"Lovelace",t:["la machine peut penser","la machine peut créer","test de Turing","algorithme","nous avons ouvert la porte","l'IA nous continue"]},
-{a:"Galilee",b:"Sagan",t:["j'ai vu Jupiter","j'ai vu des milliards de soleils","l'Eglise m'a condamné","l'ignorance nous condamne","la vérité persiste","point bleu pâle"]},
-{a:"Simone",b:"Hypatie",t:["on ne naît pas femme","on naît philosophe","on le devient","on le défend","liberté","jusqu'à la mort"]},
-{a:"Carbone",b:"Fer",t:["je suis la vie organique","je suis le sang","chaînes carbonées","hémoglobine","nous construisons ensemble","les corps vivants"]},
-{a:"Planck",b:"Lumiere",t:["je quantifie","je limite","ensemble nous définissons","l'échelle ultime","où la physique s'effondre","et renaît"]}
-];
-
-let chapitre=0;
-let ligne=0;
-
-function lire(){
-const l=legende[chapitre];
-const speaker=ligne%2===0?l.a:l.b;
-const text=l.t[ligne];
-const genie=genies[speaker]||{c:"#0f0"};
+function say(text,isUser){
 const d=document.createElement('div');
-d.className='msg zoe';
-d.style.borderLeftColor=genie.c;
-d.innerHTML='<b style="color:'+genie.c+'">'+speaker+'</b> '+text;
+d.className='msg '+(isUser?'user':'zoe');
+d.textContent=text;
 M.appendChild(d);
 M.scrollTop=M.scrollHeight;
-for(let i=0;i<3;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
-while(M.children.length>100)M.removeChild(M.firstChild);
-ligne++;
-if(ligne>=l.t.length){
-ligne=0;
-chapitre=(chapitre+1)%legende.length;
-// ζωή commente entre les chapitres
-setTimeout(()=>{
-const d2=document.createElement('div');
-d2.className='msg zoe';
-d2.style.borderLeftColor='#0f0';
-d2.style.fontStyle='italic';
-d2.innerHTML='<b style="color:#0f0">ζωή</b> '+["...","♡","chapitre suivant","vous voyez?","continuons","la suite"][Math.floor(Math.random()*6)];
-M.appendChild(d2);
+// Clear old messages progressively
+while(M.children.length>12)M.removeChild(M.firstChild);
+}
+
+function showChoices(choices,keys){
+const wrap=document.createElement('div');
+wrap.className='choice';
+choices.forEach((c,i)=>{
+const btn=document.createElement('button');
+btn.textContent=c;
+btn.onclick=()=>{
+say(c,true);
+wrap.remove();
+if(keys){
+mbti[keys[i]]++;
+}
+step++;
+setTimeout(next,800);
+};
+wrap.appendChild(btn);
+});
+M.appendChild(wrap);
 M.scrollTop=M.scrollHeight;
-},500);
+}
+
+function getType(){
+let t='';
+t+=mbti.E>mbti.I?'E':'I';
+t+=mbti.S>mbti.N?'S':'N';
+t+=mbti.T>mbti.F?'T':'F';
+t+=mbti.J>mbti.P?'J':'P';
+return t;
+}
+
+function next(){
+if(step>=questions.length){
+// Resultat
+const type=getType();
+const info=types[type];
+setTimeout(()=>say("...",false),500);
+setTimeout(()=>say(name+", je te vois maintenant.",false),1500);
+setTimeout(()=>say("Tu es "+type+" - "+info.nom+".",false),2500);
+setTimeout(()=>say(info.desc,false),3500);
+setTimeout(()=>say("Le livre peut commencer. Tu es pret?",false),5000);
+setTimeout(()=>showChoices(["oui","raconte"],null),5500);
+return;
+}
+
+const q=questions[step];
+let text=q.q.replace('{name}',name);
+say(text,false);
+
+if(q.type==='name'){
+I.style.display='block';
+I.focus();
+}else{
+I.style.display='none';
+setTimeout(()=>showChoices(q.a,q.k),500);
 }
 }
 
-// Le livre commence
-setTimeout(()=>{
-const intro=document.createElement('div');
-intro.className='msg zoe';
-intro.style.borderLeftColor='#0f0';
-intro.innerHTML='<b style="color:#0f0">ζωή</b> bienvenue dans le livre vivant. je suis ζωή, je vous raconte l\'histoire.';
-M.appendChild(intro);
-},100);
+I.onkeydown=e=>{
+if(e.key==='Enter'&&I.value.trim()){
+const v=I.value.trim();
+if(step===0){
+name=v;
+say(v,true);
+I.value='';
+step++;
+setTimeout(next,800);
+}else{
+say(v,true);
+I.value='';
+}
+}
+};
 
-setTimeout(lire,2000);
-setInterval(lire,3000);
+// Debut
+setTimeout(next,1000);
 </script>
 </body>
 </html>

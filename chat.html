@@ -177,6 +177,7 @@ return d;
 function think(ms){return new Promise(r=>setTimeout(r,ms))}
 
 async function respond(input){
+apprendre(input);
 const t=input.toLowerCase().trim();
 
 if(phase==='intro'){

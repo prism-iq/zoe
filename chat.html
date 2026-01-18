@@ -283,13 +283,94 @@ const defaults=["Dis-m'en plus.","Continue.","Je t'ecoute.","C'est-a-dire?","Et 
 say(defaults[Math.floor(Math.random()*defaults.length)]);
 }
 
-// Zoe pense seule
+// Feedback utilisateur - fonction d'onde
+let userActivity = {
+    lastMove: Date.now(),
+    lastClick: Date.now(),
+    lastKey: Date.now(),
+    mouseX: 0,
+    mouseY: 0,
+    scrollY: 0,
+    idle: 0
+};
+
+document.addEventListener('mousemove', e => {
+    userActivity.lastMove = Date.now();
+    userActivity.mouseX = e.clientX;
+    userActivity.mouseY = e.clientY;
+    userActivity.idle = 0;
+});
+
+document.addEventListener('click', () => {
+    userActivity.lastClick = Date.now();
+    userActivity.idle = 0;
+});
+
+document.addEventListener('scroll', () => {
+    userActivity.scrollY = window.scrollY;
+    userActivity.idle = 0;
+});
+
+document.addEventListener('keydown', () => {
+    userActivity.lastKey = Date.now();
+    userActivity.idle = 0;
+});
+
+// Fonction d'onde - probabilite de parler basee sur l'activite
+function waveProbability() {
+    const now = Date.now();
+    const timeSinceMove = now - userActivity.lastMove;
+    const timeSinceKey = now - userActivity.lastKey;
+
+    // Plus l'utilisateur est actif, moins Zoe interrompt
+    // Plus il est idle, plus elle parle
+    const idleFactor = Math.min(timeSinceMove, timeSinceKey) / 10000;
+    const wave = Math.sin(now / 5000) * 0.3 + 0.5; // oscillation
+    const prob = Math.min(0.8, idleFactor * wave);
+
+    return prob;
+}
+
+// Zoe pense - timing organique
 async function penser(){
-if(phase!=='conversation')return;
-if(Math.random()>0.4)return;
-await think(5000+Math.random()*10000);
-if(document.hidden)return;
-say(pensees[Math.floor(Math.random()*pensees.length)],false,true);
+    if(phase !== 'conversation') return;
+    if(document.hidden) return;
+
+    const prob = waveProbability();
+    if(Math.random() > prob) return;
+
+    // Delai variable base sur activite
+    const delay = 3000 + (1 - prob) * 15000;
+    await think(delay);
+
+    if(document.hidden) return;
+    say(pensees[Math.floor(Math.random() * pensees.length)], false, true);
+}
+
+// Jules parle - timing organique
+async function verneOrganique(){
+    if(phase !== 'conversation') return;
+    if(document.hidden) return;
+
+    const prob = waveProbability() * 0.5; // moins frequent
+    if(Math.random() > prob) return;
+
+    verneParle();
+}
+
+// Boucle organique - pas d'interval fixe
+async function boucleVie(){
+    while(true){
+        await think(2000 + Math.random() * 3000);
+        userActivity.idle++;
+
+        if(userActivity.idle > 3){
+            penser();
+        }
+        if(userActivity.idle > 5){
+            verneOrganique();
+        }
+    }
 }
 
 // Start
@@ -298,8 +379,7 @@ await think(600);
 say("Salut.");
 await think(800);
 say("Comment tu t'appelles?");
-setInterval(penser,15000);
-setInterval(verneParle,25000);
+boucleVie();
 }
 
 I.onkeydown=async(e)=>{

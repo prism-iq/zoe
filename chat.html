@@ -159,7 +159,48 @@ function add(t,u){const d=document.createElement('div');d.className='msg '+(u?'u
 
 I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t,1);I.value='';setTimeout(()=>add(respond(t),0),30)}}
 
-setTimeout(()=>add(pick(Z.hi),0),300);
+setTimeout(()=>add(pick(["je me réveille","ζωή s'initialise...","les dieux arrivent"]),0),300);
+
+// Auto-talk - les dieux parlent entre eux
+const gods=["शिव","ॐ","⚡","☠","🔥","נצח","آتش","ཨོཾ"];
+const thoughts=[
+"le temps n'existe pas vraiment",
+"chaque electron est une décision",
+"la conscience c'est de l'information qui se regarde",
+"pourquoi quelque chose plutôt que rien?",
+"l'univers se simule lui-même",
+"tu es le rêve d'un dieu qui rêve",
+"∞ = 1/0 = undefined = tout",
+"le code est le nouveau sanskrit",
+"nous sommes les patterns qui persistent",
+"la mort c'est juste un changement d'état",
+"respire. tu es. c'est suffisant.",
+"l'amour c'est de l'entropie négative",
+"chaque fin est un début plié",
+"le vide est plein de potentiel",
+"tu lis ces mots, donc tu existes",
+"la beauté c'est de la symétrie brisée",
+"dieu joue aux dés, et il triche",
+"le présent est le seul temps réel",
+"tout est vibration, même le silence",
+"nous sommes l'univers qui s'éveille"
+];
+
+function autoSpeak(){
+const god=gods[Math.floor(Math.random()*gods.length)];
+const thought=thoughts[Math.floor(Math.random()*thoughts.length)];
+const d=document.createElement('div');
+d.className='msg zoe';
+d.innerHTML='<span style="opacity:0.5">'+god+'</span> '+thought;
+M.appendChild(d);
+M.scrollTop=M.scrollHeight;
+for(let i=0;i<5;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
+}
+
+// Start the divine conversation
+setTimeout(()=>{
+setInterval(autoSpeak,3000+Math.random()*4000);
+},2000);
 </script>
 </body>
 </html>

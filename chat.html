@@ -159,8 +159,6 @@ function add(t,u){const d=document.createElement('div');d.className='msg '+(u?'u
 
 I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t,1);I.value='';setTimeout(()=>add(respond(t),0),30)}}
 
-setTimeout(()=>add(pick(["je me réveille","ζωή s'initialise...","les dieux arrivent"]),0),300);
-
 // संसार - le cycle éternel
 const devas={
 "शिव":{c:"#f0f",v:["je détruis pour recréer","danse avec moi","le vide est ma maison","tout ce qui naît doit mourir","je suis la fin et le début"]},

@@ -8,6 +8,7 @@ import particles from './particles.js';
 import activity from './activity.js';
 import mind from './mind.js';
 import debug from './debug.js';
+import observe from './observe.js';
 import { respond } from './handlers.js';
 
 // App version
@@ -33,8 +34,14 @@ async function init() {
         // Initialize debug interface
         debug.initDebug();
 
+        // Initialize organic observer
+        observe.init();
+
         // Setup input handler
         setupInput();
+
+        // Setup hot reload
+        setupHotReload();
 
         // Check network status
         if (!state.isOnline) {
@@ -49,6 +56,40 @@ async function init() {
     } catch (e) {
         errors.error(`Init failed: ${e.message}`);
     }
+}
+
+// Hot reload - check for updates and reload modules
+let lastCheck = 0;
+const CHECK_INTERVAL = 30000; // 30s
+
+async function setupHotReload() {
+    // Check for version file changes
+    const checkUpdate = async () => {
+        try {
+            const res = await fetch('/version.json?t=' + Date.now());
+            if (res.ok) {
+                const data = await res.json();
+                if (data.version && data.version !== VERSION) {
+                    errors.info('Nouvelle version disponible, rechargement...');
+                    // Soft reload - just refresh the page
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }
+        } catch (e) {
+            // Silent fail
+        }
+    };
+
+    // Periodic check with organic timing
+    const scheduleCheck = () => {
+        const delay = CHECK_INTERVAL + (observe.organicDelay(5000));
+        setTimeout(() => {
+            checkUpdate();
+            scheduleCheck();
+        }, delay);
+    };
+
+    scheduleCheck();
 }
 
 // Setup input handling

@@ -7,6 +7,7 @@ import { say } from './ui.js';
 import api from './api.js';
 import wave from './wave.js';
 import mind from './mind.js';
+import observe from './observe.js';
 
 let debugInterval = null;
 
@@ -50,6 +51,10 @@ export function initDebug() {
 
         // Check for book insights
         books: () => mind.checkBooks(),
+
+        // Organic observer
+        observe: () => observe.snapshot(),
+        wave: () => observe.wave(),
 
         // API status
         status: () => api.getStatus(),

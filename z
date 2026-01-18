@@ -1,0 +1,26 @@
+#!/bin/bash
+# z - silent continuous improvement
+
+LOG="/var/log/atlas/z.log"
+mkdir -p /var/log/atlas
+
+case "$1" in
+    ""|watch)
+        (while true; do
+            OK=1
+            curl -sf https://prism-iq.github.io/zoe/chat.html >/dev/null || OK=0
+            curl -sf https://prism-iq.github.io/zoe/ >/dev/null || OK=0
+            curl -sf https://prism-iq.github.io/ieud/ >/dev/null || OK=0
+            [ $OK -eq 1 ] && echo "$(date +%H:%M) ✓" >> "$LOG" || echo "$(date +%H:%M) ✗" >> "$LOG"
+            tail -100 "$LOG" > "$LOG.tmp" && mv "$LOG.tmp" "$LOG"
+            sleep 60
+        done) &>/dev/null &
+        disown
+        echo "z"
+        ;;
+    stop) pkill -f "z watch" ;;
+    log) tail -20 "$LOG" ;;
+    status) curl -so /dev/null -w "%{http_code}\n" https://prism-iq.github.io/zoe/ ;;
+    test) curl -sf https://prism-iq.github.io/zoe/ && echo "φ" ;;
+    fix) git add -A && git commit -m "z" 2>/dev/null && git push 2>/dev/null && echo "φ" ;;
+esac

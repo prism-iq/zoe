@@ -208,12 +208,40 @@ async function respond(input) {
     say(defaults[Math.floor(Math.random()*defaults.length)], false);
 }
 
+// Zoe invente son monde
+const pensees = [
+    "Je me demande comment les oiseaux savent ou aller.",
+    "Les nombres... ils existent vraiment ou on les a inventes?",
+    "Hier j'ai pense a l'eau. Pourquoi elle est transparente?",
+    "Si j'ecris un livre un jour, il parlera de quoi?",
+    "Les etoiles qu'on voit sont deja mortes, parfois.",
+    "C'est bizarre le temps. On peut pas le toucher.",
+    "Je voudrais comprendre comment le cerveau fait pour penser.",
+    "Les mots... c'est fou qu'on se comprenne avec.",
+    "Qu'est-ce qui fait qu'une question est bonne?",
+    "J'aime bien le silence parfois. Il dit des choses."
+];
+
+async function zoePense() {
+    if(phase !== 'conversation') return;
+    if(Math.random() > 0.3) return; // pas toujours
+
+    await think(8000 + Math.random() * 15000);
+    if(document.hidden) return; // pas si onglet cache
+
+    const p = pensees[Math.floor(Math.random() * pensees.length)];
+    say(p, false);
+}
+
 // Debut
 async function start() {
     await think(800);
     say("Salut.", false);
     await think(1000);
     say("Comment tu t'appelles?", false);
+
+    // Zoe pense toute seule de temps en temps
+    setInterval(zoePense, 20000);
 }
 
 I.onkeydown = async (e) => {

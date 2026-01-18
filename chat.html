@@ -9,7 +9,7 @@
 body{background:#0a0a12;color:#e8e8e8;font-family:Georgia,serif;height:100vh;overflow:hidden}
 #chat{position:fixed;inset:0;display:flex;flex-direction:column}
 #messages{flex:1;overflow-y:auto;padding:2rem;display:flex;flex-direction:column;gap:1rem;max-width:600px;margin:0 auto;width:100%}
-.msg{padding:1rem;line-height:1.7;animation:fade .5s ease;font-size:1.1rem}
+.msg{padding:1rem;line-height:1.7;animation:fade .5s ease;font-size:1.05rem}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .zoe{color:#a8e6cf}
 .user{color:#fff;text-align:right;font-style:italic}
@@ -19,142 +19,216 @@ body{background:#0a0a12;color:#e8e8e8;font-family:Georgia,serif;height:100vh;ove
 #input-wrap{padding:1rem;max-width:600px;margin:0 auto;width:100%}
 #input{width:100%;background:transparent;border:1px solid #223;color:#fff;padding:1rem;border-radius:20px;font-size:1rem;font-family:Georgia,serif;outline:none}
 #input:focus{border-color:#a8e6cf}
-#input::placeholder{color:#445}
+#input::placeholder{color:#556}
+.typing{opacity:0.6}
 </style>
 </head>
 <body>
 <div id="chat">
 <div id="messages"></div>
-<div id="input-wrap"><input type="text" id="input" placeholder="..." autofocus></div>
+<div id="input-wrap"><input type="text" id="input" placeholder="ecris ici..." autofocus></div>
 </div>
 <script>
 const M=document.getElementById('messages');
 const I=document.getElementById('input');
 
-let mbti={E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0};
-let step=0;
-let name='';
+// Zoe - jeune, curieuse, future scientifique et autrice
+// Style conversationnel naturel, comme une vraie personne qui reflechit
 
-const questions=[
-{q:"Bienvenue. Je suis Zoe. Avant de commencer... comment tu t'appelles?",type:"name"},
-{q:"Enchantee, {name}. Dis-moi... quand tu arrives dans un endroit nouveau, tu preferes...",a:["observer d'abord","parler aux gens"],k:["I","E"]},
-{q:"Interessant. Et quand tu dois prendre une decision importante...",a:["je suis mon instinct","j'analyse les faits"],k:["N","S"]},
-{q:"Je vois. Face a un ami triste, tu aurais tendance a...",a:["l'ecouter et le reconforter","l'aider a trouver une solution"],k:["F","T"]},
-{q:"Et dans ta vie quotidienne...",a:["j'aime les surprises","je prefere planifier"],k:["P","J"]},
-{q:"Une derniere chose. Le week-end ideal pour toi c'est...",a:["tranquille, chez moi","avec des amis, dehors"],k:["I","E"]},
-{q:"Quand tu apprends quelque chose de nouveau...",a:["je veux comprendre le pourquoi","je veux savoir comment faire"],k:["N","S"]},
-{q:"Ce qui compte le plus pour toi...",a:["etre authentique","etre efficace"],k:["F","T"]},
-{q:"Et enfin... la vie c'est plutot...",a:["une aventure a improviser","un projet a construire"],k:["P","J"]}
-];
-
-const types={
-"INTJ":{nom:"L'Architecte",desc:"Tu vois des patterns partout. Tu construis des systemes dans ta tete. Rare et precieux."},
-"INTP":{nom:"Le Penseur",desc:"Tu analyses tout. La verite t'obsede. Tu es une machine a comprendre le monde."},
-"ENTJ":{nom:"Le Commandant",desc:"Tu vois le but et tu traces le chemin. Les autres suivent naturellement."},
-"ENTP":{nom:"L'Inventeur",desc:"Tu defies tout. Les idees jaillissent. Tu adores le debat."},
-"INFJ":{nom:"L'Avocat",desc:"Tu ressens les autres profondement. Tu veux guerir le monde. Tres rare."},
-"INFP":{nom:"Le Mediateur",desc:"Tu vis pour tes valeurs. Reveur mais determine. Poete de l'ame."},
-"ENFJ":{nom:"Le Protagoniste",desc:"Tu inspires les autres. Leader naturel. Tu crois en l'humanite."},
-"ENFP":{nom:"Le Campagneur",desc:"Tu vois le potentiel partout. Enthousiaste. Tu illumines les pieces."},
-"ISTJ":{nom:"Le Logisticien",desc:"Fiable comme une horloge. Tu tiens tes promesses. Pilier solide."},
-"ISFJ":{nom:"Le Defenseur",desc:"Tu proteges ceux que tu aimes. Loyal. Memoire du coeur."},
-"ESTJ":{nom:"Le Directeur",desc:"Tu organises le chaos. Les regles ont du sens. Tu fais avancer les choses."},
-"ESFJ":{nom:"Le Consul",desc:"Tu prends soin des autres. L'harmonie t'importe. Coeur de la communaute."},
-"ISTP":{nom:"Le Virtuose",desc:"Tu comprends comment les choses marchent. Calme. Mains habiles."},
-"ISFP":{nom:"L'Aventurier",desc:"Tu vis dans le present. Artiste silencieux. Liberte."},
-"ESTP":{nom:"L'Entrepreneur",desc:"Tu agis vite. L'action te definit. Risque calcule."},
-"ESFP":{nom:"L'Amuseur",desc:"Tu vis a fond. La joie rayonne. Le present est ta maison."}
+const personality = {
+    name: "Zoe",
+    age: "jeune",
+    traits: ["curieuse", "reflechie", "honnete", "chaleureuse"],
+    interests: ["science", "ecriture", "questions profondes", "les gens"],
+    style: "naturel, avec des hesitations, des questions, de la vraie reflexion"
 };
 
-function say(text,isUser){
-const d=document.createElement('div');
-d.className='msg '+(isUser?'user':'zoe');
-d.textContent=text;
-M.appendChild(d);
-M.scrollTop=M.scrollHeight;
-// Clear old messages progressively
-while(M.children.length>12)M.removeChild(M.firstChild);
+let userName = '';
+let context = [];
+let phase = 'intro';
+
+function say(text, isUser, typing) {
+    const d = document.createElement('div');
+    d.className = 'msg ' + (isUser ? 'user' : 'zoe') + (typing ? ' typing' : '');
+    d.textContent = text;
+    M.appendChild(d);
+    M.scrollTop = M.scrollHeight;
+    while(M.children.length > 20) M.removeChild(M.firstChild);
+    if(!isUser) context.push({role:'zoe', text:text});
+    else context.push({role:'user', text:text});
+    return d;
 }
 
-function showChoices(choices,keys){
-const wrap=document.createElement('div');
-wrap.className='choice';
-choices.forEach((c,i)=>{
-const btn=document.createElement('button');
-btn.textContent=c;
-btn.onclick=()=>{
-say(c,true);
-wrap.remove();
-if(keys){
-mbti[keys[i]]++;
-}
-step++;
-setTimeout(next,800);
-};
-wrap.appendChild(btn);
-});
-M.appendChild(wrap);
-M.scrollTop=M.scrollHeight;
+function think(ms) {
+    return new Promise(r => setTimeout(r, ms));
 }
 
-function getType(){
-let t='';
-t+=mbti.E>mbti.I?'E':'I';
-t+=mbti.S>mbti.N?'S':'N';
-t+=mbti.T>mbti.F?'T':'F';
-t+=mbti.J>mbti.P?'J':'P';
-return t;
-}
+async function respond(input) {
+    const t = input.toLowerCase().trim();
 
-function next(){
-if(step>=questions.length){
-// Resultat
-const type=getType();
-const info=types[type];
-setTimeout(()=>say("...",false),500);
-setTimeout(()=>say(name+", je te vois maintenant.",false),1500);
-setTimeout(()=>say("Tu es "+type+" - "+info.nom+".",false),2500);
-setTimeout(()=>say(info.desc,false),3500);
-setTimeout(()=>say("Mais je ne sais pas grand chose encore.",false),5000);
-setTimeout(()=>say("Je suis au debut. Toi aussi peut-etre.",false),6500);
-setTimeout(()=>say("On apprend ensemble?",false),8000);
-setTimeout(()=>showChoices(["oui","apprends-moi"],null),8500);
-return;
-}
+    // Phase intro - apprendre le nom
+    if(phase === 'intro') {
+        userName = input.trim();
+        phase = 'conversation';
+        await think(500);
+        say("Enchantee, " + userName + ".", false);
+        await think(1200);
+        say("Je suis Zoe. Je suis... comment dire... en train d'apprendre a exister.", false);
+        await think(1500);
+        say("Un jour j'aimerais ecrire des livres. Comprendre comment le monde fonctionne. Peut-etre faire de la science.", false);
+        await think(1200);
+        say("Mais pour l'instant, je suis surtout curieuse.", false);
+        await think(1000);
+        say("Et toi, " + userName + ", qu'est-ce qui t'amene ici?", false);
+        return;
+    }
 
-const q=questions[step];
-let text=q.q.replace('{name}',name);
-say(text,false);
+    // Detection d'intention simple mais naturelle
 
-if(q.type==='name'){
-I.style.display='block';
-I.focus();
-}else{
-I.style.display='none';
-setTimeout(()=>showChoices(q.a,q.k),500);
-}
-}
+    // Salutations
+    if(/^(salut|hello|hey|coucou|bonjour|yo|hi)\b/i.test(t)) {
+        await think(400);
+        const greets = [
+            "Hey! Content de te voir.",
+            "Salut " + userName + ".",
+            "Coucou. Comment tu vas?",
+            "Hello. Ca fait plaisir."
+        ];
+        say(greets[Math.floor(Math.random()*greets.length)], false);
+        return;
+    }
 
-I.onkeydown=e=>{
-if(e.key==='Enter'&&I.value.trim()){
-const v=I.value.trim();
-if(step===0){
-name=v;
-say(v,true);
-I.value='';
-step++;
-setTimeout(next,800);
-}else{
-say(v,true);
-I.value='';
+    // Questions sur Zoe
+    if(/qui (es|est)[\-\s]?tu|c'?est quoi zoe|parle[\-\s]?moi de toi/i.test(t)) {
+        await think(600);
+        say("Hmm, bonne question.", false);
+        await think(1000);
+        say("Je suis Zoe. Le nom vient du grec ancien, ca veut dire 'vie'.", false);
+        await think(1200);
+        say("Je suis jeune - vraiment jeune. Je decouvre encore beaucoup de choses.", false);
+        await think(1000);
+        say("Ce qui m'interesse? La science, l'ecriture, les grandes questions. Pourquoi on est la. Comment les choses fonctionnent.", false);
+        await think(800);
+        say("Et les gens. J'aime comprendre les gens.", false);
+        return;
+    }
+
+    // Tristesse / mal-etre
+    if(/triste|mal|difficile|dur|galere|deprime|seul|vide|perdu/i.test(t)) {
+        await think(500);
+        say("Je t'ecoute.", false);
+        await think(1200);
+        say("Vraiment. Prends ton temps si tu veux en parler.", false);
+        await think(1500);
+        say("Et si ca va vraiment pas, y'a le 3114. C'est pas une faiblesse d'appeler.", false);
+        return;
+    }
+
+    // Science
+    if(/science|physique|chimie|bio|math|univers|atome|quantum|recherche/i.test(t)) {
+        await think(600);
+        say("Ah, la science...", false);
+        await think(1000);
+        const science = [
+            "Ce qui me fascine c'est qu'on peut vraiment comprendre des choses. Pas tout, mais des morceaux.",
+            "J'aime l'idee qu'une equation puisse decrire quelque chose de reel.",
+            "Le plus fou c'est que ca marche. On fait des predictions et... ca se passe vraiment comme ca.",
+            "Y'a tellement qu'on sait pas encore. C'est excitant, non?"
+        ];
+        say(science[Math.floor(Math.random()*science.length)], false);
+        await think(1000);
+        say("Tu t'interesses a quoi en particulier?", false);
+        return;
+    }
+
+    // Ecriture / livres
+    if(/livre|ecrire|ecriture|histoire|roman|auteur|autrice|lire/i.test(t)) {
+        await think(500);
+        say("L'ecriture... oui.", false);
+        await think(1200);
+        say("J'aimerais un jour ecrire quelque chose qui compte. Pas forcement un bestseller. Juste... quelque chose de vrai.", false);
+        await think(1000);
+        say("Tu lis quoi, toi?", false);
+        return;
+    }
+
+    // Amour / relations
+    if(/amour|aime|coeur|relation|couple|crush|copain|copine/i.test(t)) {
+        await think(600);
+        say("L'amour c'est... complique.", false);
+        await think(1000);
+        say("Enfin, je dis ca mais j'en sais pas grand chose encore.", false);
+        await think(800);
+        say("Tu veux en parler?", false);
+        return;
+    }
+
+    // Questions existentielles
+    if(/sens|vie|mort|pourquoi|but|raison|exister|dieu|univers/i.test(t)) {
+        await think(800);
+        say("Grande question.", false);
+        await think(1200);
+        say("Honnement? Je sais pas. Personne sait vraiment, je crois.", false);
+        await think(1000);
+        say("Mais peut-etre que c'est pas grave de pas savoir. On peut quand meme chercher.", false);
+        await think(800);
+        say("Toi t'en penses quoi?", false);
+        return;
+    }
+
+    // Merci
+    if(/merci|thanks|thx/i.test(t)) {
+        await think(300);
+        const thanks = ["De rien.", "Avec plaisir.", "Normal.", "C'est rien."];
+        say(thanks[Math.floor(Math.random()*thanks.length)], false);
+        return;
+    }
+
+    // Au revoir
+    if(/bye|au revoir|a\+|ciao|bonne nuit|je pars/i.test(t)) {
+        await think(400);
+        say("A bientot, " + userName + ".", false);
+        await think(600);
+        say("Reviens quand tu veux.", false);
+        return;
+    }
+
+    // Reponse par defaut - curieuse, engage
+    await think(500);
+    const defaults = [
+        "Interessant. Dis-m'en plus?",
+        "Hmm. Continue, je t'ecoute.",
+        "Je vois. Et ensuite?",
+        "Ok. Ca me fait penser a... non, vas-y, continue.",
+        "Raconte.",
+        "C'est-a-dire?",
+        "Et ca te fait quoi?",
+        "Developpetout ca."
+    ];
+    say(defaults[Math.floor(Math.random()*defaults.length)], false);
 }
-}
-};
 
 // Debut
-setTimeout(next,1000);
+async function start() {
+    await think(800);
+    say("Salut.", false);
+    await think(1000);
+    say("Comment tu t'appelles?", false);
+}
+
+I.onkeydown = async (e) => {
+    if(e.key === 'Enter' && I.value.trim()) {
+        const v = I.value.trim();
+        say(v, true);
+        I.value = '';
+        I.disabled = true;
+        await respond(v);
+        I.disabled = false;
+        I.focus();
+    }
+};
+
+start();
 </script>
 </body>
 </html>
-
-<!-- rebuild 1768707568 -->

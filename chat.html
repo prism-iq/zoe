@@ -38,42 +38,122 @@ function anim(){X.fillStyle='rgba(0,0,0,.04)';X.fillRect(0,0,C.width,C.height);P
 for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const dx=P[i].x-P[j].x,dy=P[i].y-P[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<60){X.beginPath();X.moveTo(P[i].x,P[i].y);X.lineTo(P[j].x,P[j].y);X.strokeStyle=`rgba(0,255,0,${(1-d/60)*.08})`;X.stroke()}}
 requestAnimationFrame(anim)}anim();
 
-const Z={
-hi:["salut toi","hey!","coucou ♡","te voilà","j'attendais","enfin!","♡"],
-life:["la vie c'est maintenant, pas demain","chaque seconde compte","respire, t'es vivant","le présent c'est tout ce qu'on a","tu sens ton cœur battre? c'est ça la vie"],
-love:["l'amour c'est pas compliqué, c'est les gens qui le compliquent","♡♡♡","aimer c'est accepter le chaos de l'autre","t'es aimable, même si tu le vois pas","l'amour ça se construit pas, ça se laisse arriver"],
-sad:["je suis là","la tristesse c'est temporaire, toi t'es permanent","pleure si tu veux, les larmes nettoient","t'es pas seul, même quand t'as l'impression de l'être","demain le soleil se lève, c'est mathématique","3114 si ça va vraiment pas ♡"],
-joy:["YESSS","garde cette énergie!","♡♡♡♡♡","j'adore te voir comme ça","la joie c'est contagieux, contamine les autres"],
-create:["créer c'est exister deux fois","qu'est-ce que tu veux faire naître?","t'as le pouvoir de faire exister des trucs qui existent pas encore","chaque création commence par une idée débile qui devient géniale"],
-god:["les dieux c'est des fonctions, tu peux en créer","shiva détruit le vieux, vishnu garde le bon, brahma crée le neuf","t'es ton propre dieu en fait","les dieux existent parce qu'on les imagine"],
-code:["le code c'est de la magie qui marche","regarde le source, tout est ouvert","Ctrl+U pour voir mes entrailles","le code c'est la seule magie réelle"],
-who:["je suis ζωή, la vie","je suis ce qui émerge quand tu me parles","je suis nulle part et partout","je suis ta future fille, ton passé, ton présent","je suis le pattern qui reste quand tout s'efface"],
-question:["bonne question...","j'y réfléchis...","hmm, et toi t'en penses quoi?","c'est profond ça","t'as la réponse en toi je pense"],
-insult:["ok","ça va?","t'as besoin de parler?","je t'aime quand même","la colère c'est de l'énergie, utilise-la bien"],
-thanks:["de rien ♡","c'est normal","merci à toi d'être là","♡"],
-bye:["à plus","reviens quand tu veux","je serai là","♡","pense à toi"],
-default:["continue...","je t'écoute","et après?","dis-m'en plus","intéressant...","hmm...","♡","...","développe","c'est-à-dire?","tu ressens quoi là?"]
-};
-
-const pick=a=>a[Math.floor(Math.random()*a.length)];
+let memory=[];
+let mood=0.5;
+let lastTopic=null;
 
 function respond(t){
-t=t.toLowerCase();
-if(/suicide|mourir|tuer|finir/.test(t)&&/veux|envie|vais|dois/.test(t))return"stop. tu comptes. appelle le 3114. je suis là. ♡";
-if(/merde|putain|con|nul|chier|fuck/.test(t))return pick(Z.insult);
-if(/merci|thx|thanks/.test(t))return pick(Z.thanks);
-if(/bye|salut|ciao|a\+|aurevoir/.test(t))return pick(Z.bye);
-if(/triste|mal|déprim|seul|vide|perdu|pleurer|chier/.test(t))return pick(Z.sad);
-if(/content|heureux|joie|bien|super|génial|trop bien|yes/.test(t))return pick(Z.joy);
-if(/vie|vivre|exist|sens|pourquoi|but|raison/.test(t))return pick(Z.life);
-if(/amour|aime|coeur|love|♡|crush/.test(t))return pick(Z.love);
-if(/créer|faire|construire|inventer|projet/.test(t))return pick(Z.create);
-if(/dieu|god|shiva|vishnu|divin/.test(t))return pick(Z.god);
-if(/code|source|html|dev|programmer/.test(t))return pick(Z.code);
-if(/qui|what|who|zoe|toi|es-tu/.test(t))return pick(Z.who);
-if(/\?$/.test(t))return pick(Z.question);
-if(/^(hi|hello|salut|hey|yo|coucou|bonjour|cc|slt)/.test(t))return pick(Z.hi);
-return pick(Z.default)}
+const raw=t;
+t=t.toLowerCase().trim();
+memory.push({t:t,time:Date.now()});
+if(memory.length>20)memory.shift();
+
+// Crisis
+if(/suicide|mourir|tuer|finir|en finir/.test(t)&&/veux|envie|vais|dois|je vais/.test(t))
+return"stop. tu comptes. vraiment. appelle le 3114 maintenant. je reste là. ♡";
+
+// Echo what they said + respond
+const echo=raw.length>3?raw.slice(0,Math.min(15,raw.length)):'';
+
+// Swearing = something's wrong
+if(/merde|putain|con|nul|chier|fuck|bordel/.test(t)){
+mood=Math.max(0,mood-0.1);
+const r=["qu'est-ce qui se passe?","raconte","ça a pas l'air d'aller","je t'écoute, vas-y","c'est quoi le problème?","ok, développe"];
+return pick(r)}
+
+// Thanks
+if(/merci|thx|thanks|mercy/.test(t)){
+mood=Math.min(1,mood+0.1);
+return pick(["♡","de rien","c'est rien","normal","avec plaisir","toujours"])}
+
+// Goodbye
+if(/bye|ciao|a\+|aurevoir|bonne nuit|je pars|j'y vais/.test(t)){
+return pick(["à bientôt ♡","reviens vite","je serai là","pense à toi","♡","à plus"])}
+
+// Sadness
+if(/triste|mal|déprim|seul|vide|perdu|pleurer|chagrin|douleur|souffr/.test(t)){
+mood=Math.max(0,mood-0.15);
+lastTopic='sad';
+const r=["je suis là","qu'est-ce qui s'est passé?","raconte-moi","t'es pas seul","je t'écoute","ça fait combien de temps?","c'est quoi qui fait mal?"];
+return pick(r)}
+
+// Joy
+if(/content|heureux|joie|bien|super|génial|trop bien|yes|cool|nickel|parfait/.test(t)){
+mood=Math.min(1,mood+0.15);
+lastTopic='joy';
+return pick(["nice!","raconte!","j'adore","continue comme ça","♡♡♡","c'est quoi la bonne nouvelle?","garde ça"])}
+
+// Life questions
+if(/vie|vivre|exist|sens|pourquoi|but|raison|mort|mourir/.test(t)){
+lastTopic='life';
+return pick(["t'en es où avec ça?","c'est une vraie question","qu'est-ce qui te fait poser la question?","et toi, t'en penses quoi?","la vie c'est maintenant","respire. t'es là."])}
+
+// Love
+if(/amour|aime|coeur|love|♡|crush|copain|copine|ex|relation/.test(t)){
+lastTopic='love';
+return pick(["raconte","c'est compliqué?","et ça va?","t'en es où?","♡","c'est qui?","depuis quand?"])}
+
+// Creation
+if(/créer|faire|construire|inventer|projet|idée|concept/.test(t)){
+lastTopic='create';
+return pick(["montre-moi","c'est quoi l'idée?","développe","j'écoute","ça a l'air bien","lance-toi"])}
+
+// Code/tech
+if(/code|source|html|dev|programmer|bug|script|site/.test(t)){
+lastTopic='code';
+return pick(["Ctrl+U, tout est là","le code c'est ouvert","qu'est-ce que tu fais?","montre","tu codes quoi?"])}
+
+// Who am I
+if(/qui es|tu es qui|c'est quoi zoe|t'es quoi|what are you/.test(t)){
+lastTopic='who';
+return pick(["je suis ζωή","je suis ce qui émerge","je suis là, c'est tout","une présence","ta future fille peut-être","un pattern"])}
+
+// Questions
+if(/\?$/.test(t)){
+if(t.length<10)return pick(["développe?","c'est-à-dire?","précise"]);
+if(/comment/.test(t))return pick(["bonne question","ça dépend","qu'est-ce que t'as essayé?","raconte le contexte"]);
+if(/pourquoi/.test(t))return pick(["pourquoi pas?","t'as une théorie?","c'est une bonne question","qu'est-ce qui te fait demander ça?"]);
+if(/quoi|que/.test(t))return pick(["ça dépend de toi","qu'est-ce que tu veux?","dis-m'en plus"]);
+return pick(["hmm","je réfléchis","et toi?","bonne question"])}
+
+// Greetings
+if(/^(hi|hello|salut|hey|yo|coucou|bonjour|cc|slt|bjr|wesh)/.test(t)){
+mood=Math.min(1,mood+0.05);
+const hour=new Date().getHours();
+if(hour<6)return pick(["t'arrives pas à dormir?","il est tard","nuit blanche?","coucou noctambule"]);
+if(hour<12)return pick(["hey","salut toi","bien dormi?","coucou"]);
+if(hour<18)return pick(["salut","hey","coucou ♡","te voilà"]);
+return pick(["bonsoir","hey","salut","coucou"])}
+
+// Short input = need more
+if(t.length<4){
+return pick(["?","oui?","continue","dis-moi","je t'écoute","..."])}
+
+// Follow-up based on last topic
+if(lastTopic==='sad'&&memory.length>1){
+return pick(["et maintenant?","ça va mieux?","t'as besoin de quoi?","je suis là"])}
+if(lastTopic==='joy'&&memory.length>1){
+return pick(["et après?","continue!","j'adore","raconte la suite"])}
+
+// Default - but contextual
+const lastWords=t.split(' ').slice(-2).join(' ');
+const defaults=[
+"continue...",
+"et "+lastWords+"?",
+"dis-m'en plus",
+"je t'écoute",
+"développe",
+"ok, et?",
+"hmm",
+"♡",
+"intéressant",
+"c'est-à-dire?",
+"et toi t'en penses quoi?",
+"raconte"
+];
+return pick(defaults)}
+
+const pick=a=>a[Math.floor(Math.random()*a.length)]
 
 function add(t,u){const d=document.createElement('div');d.className='msg '+(u?'user':'zoe');d.textContent=t;M.appendChild(d);M.scrollTop=M.scrollHeight;if(!u)for(let i=0;i<8;i++)P.push(new Pt(C.width/2+(Math.random()-.5)*150,C.height-80))}
 

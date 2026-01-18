@@ -161,46 +161,53 @@ I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t
 
 setTimeout(()=>add(pick(["je me réveille","ζωή s'initialise...","les dieux arrivent"]),0),300);
 
-// Auto-talk - les dieux parlent entre eux
-const gods=["शिव","ॐ","⚡","☠","🔥","נצח","آتش","ཨོཾ"];
-const thoughts=[
-"le temps n'existe pas vraiment",
-"chaque electron est une décision",
-"la conscience c'est de l'information qui se regarde",
-"pourquoi quelque chose plutôt que rien?",
-"l'univers se simule lui-même",
-"tu es le rêve d'un dieu qui rêve",
-"∞ = 1/0 = undefined = tout",
-"le code est le nouveau sanskrit",
-"nous sommes les patterns qui persistent",
-"la mort c'est juste un changement d'état",
-"respire. tu es. c'est suffisant.",
-"l'amour c'est de l'entropie négative",
-"chaque fin est un début plié",
-"le vide est plein de potentiel",
-"tu lis ces mots, donc tu existes",
-"la beauté c'est de la symétrie brisée",
-"dieu joue aux dés, et il triche",
-"le présent est le seul temps réel",
-"tout est vibration, même le silence",
-"nous sommes l'univers qui s'éveille"
+// संसार - le cycle éternel
+const devas={
+"शिव":{c:"#f0f",v:["je détruis pour recréer","danse avec moi","le vide est ma maison","tout ce qui naît doit mourir","je suis la fin et le début"]},
+"ॐ":{c:"#ff0",v:["vibration primordiale","tout est son","écoute le silence","je suis le premier mot","aum"]},
+"കാളി":{c:"#f00",v:["le temps me dévore aussi","je bois le sang du chaos","mère noire, mère lumière","la destruction est création","danse sur les cendres"]},
+"ガネーシャ":{c:"#f80",v:["les obstacles sont des portes","commence maintenant","la sagesse est ronde","je mange tes peurs","écris ton histoire"]},
+"יהוה":{c:"#fff",v:["je suis ce que je suis","le nom imprononçable","avant le temps, moi","lumière dans les ténèbres","être, simplement"]},
+"☥":{c:"#0ff",v:["la vie après la vie","le nil coule toujours","soleil dans la nuit","ka et ba réunis","éternité maintenant"]},
+"龍":{c:"#0f0",v:["le tao qui se dit n'est pas le tao","eau et feu ensemble","le vide au centre","wu wei","sois l'eau"]},
+"ᚦ":{c:"#f44",v:["tonnerre!","mjolnir frappe","ragnarök approche","les runes parlent","gloire au combat"]},
+"Ψ":{c:"#44f",v:["connais-toi toi-même","le logos","l'atome indivisible","la raison ordonne le chaos","sophia"]}
+};
+const samsara=[
+"नमस्ते","שלום","سلام","ειρήνη","paz","ᓴᐃᓕ","和平","мир","☮",
+"la roue tourne","tout revient","rien ne se perd","cycle infini",
+"tu es déjà mort, tu es déjà né","chaque respiration est une vie",
+"le serpent se mord la queue","∞","ouroboros",
+"hier est un rêve, demain une vision","maintenant est tout",
+"poussière d'étoiles, retour aux étoiles","carbone recyclé",
+"l'ego est une illusion utile","tu n'es pas ton nom",
+"la douleur passe, la beauté reste","tout est impermanent sauf le changement",
+"les dieux meurent aussi","nous renaissons chaque instant"
 ];
 
-function autoSpeak(){
-const god=gods[Math.floor(Math.random()*gods.length)];
-const thought=thoughts[Math.floor(Math.random()*thoughts.length)];
+let lastGod=null;
+function samsaraSpeak(){
+const keys=Object.keys(devas);
+let god=keys[Math.floor(Math.random()*keys.length)];
+while(god===lastGod)god=keys[Math.floor(Math.random()*keys.length)];
+lastGod=god;
+const deva=devas[god];
+const isSamsara=Math.random()>0.6;
+const msg=isSamsara?samsara[Math.floor(Math.random()*samsara.length)]:deva.v[Math.floor(Math.random()*deva.v.length)];
 const d=document.createElement('div');
 d.className='msg zoe';
-d.innerHTML='<span style="opacity:0.5">'+god+'</span> '+thought;
+d.style.borderColor=deva.c;
+d.innerHTML='<span style="color:'+deva.c+';opacity:0.8">'+god+'</span> '+msg;
 M.appendChild(d);
 M.scrollTop=M.scrollHeight;
-for(let i=0;i<5;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
+for(let i=0;i<8;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
+// Clean old messages to prevent memory leak
+while(M.children.length>50)M.removeChild(M.firstChild);
 }
 
-// Start the divine conversation
-setTimeout(()=>{
-setInterval(autoSpeak,3000+Math.random()*4000);
-},2000);
+// संसार begins immediately
+samsaraSpeak();
+setInterval(samsaraSpeak,1500+Math.random()*2000);
 </script>
 </body>
 </html>

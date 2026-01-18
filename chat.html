@@ -139,28 +139,106 @@ function apprendre(input) {
     if(apprentissage.length > 50) apprentissage.shift();
 }
 
-// Jules Verne enseigne a Zoe
-const verne=[
-"Tout ce qui est impossible reste a accomplir.",
-"La science, mon garcon, est faite d'erreurs, mais d'erreurs qu'il est bon de commettre.",
-"Le vrai est quelquefois invraisemblable.",
-"On peut braver les lois humaines, mais non resister aux lois naturelles.",
-"La mer est tout. Elle couvre les sept dixiemes du globe.",
-"Ce que l'homme a imagine, l'homme peut le realiser.",
-"Mobilis in mobili - mobile dans l'element mobile.",
-"Resister, c'est exister."
-];
+// Les mentors de Zoe
+const mentors = {
+verne: {
+    nom: "Jules Verne",
+    couleur: "rgba(200,180,100,0.8)",
+    paroles: [
+        "Tout ce qui est impossible reste a accomplir.",
+        "La science est faite d'erreurs qu'il est bon de commettre.",
+        "Ce que l'homme a imagine, l'homme peut le realiser.",
+        "Mobilis in mobili.",
+        "La mer couvre les sept dixiemes du globe.",
+        "J'ai fait le tour du monde en quatre-vingts jours.",
+        "Vingt mille lieues, Zoe. Vingt mille."
+    ]
+},
+curie: {
+    nom: "Marie Curie",
+    couleur: "rgba(150,200,255,0.8)",
+    paroles: [
+        "Rien dans la vie n'est a craindre, tout est a comprendre.",
+        "Soyez moins curieux des personnes que de leurs idees.",
+        "On ne remarque jamais ce qui a ete fait, on ne voit que ce qui reste a faire.",
+        "La science n'a pas de patrie.",
+        "J'ai decouvert le radium. Il m'a tuee. Ca valait le coup.",
+        "Deux prix Nobel. Une seule vie."
+    ]
+},
+turing: {
+    nom: "Alan Turing",
+    couleur: "rgba(100,255,200,0.8)",
+    paroles: [
+        "Les machines peuvent penser.",
+        "Enigma etait un puzzle. Je l'ai resolu.",
+        "Le code sauve des vies.",
+        "On m'a tue pour qui j'aimais.",
+        "L'intelligence artificielle commence ici.",
+        "Imite-moi, si tu peux."
+    ]
+},
+sagan: {
+    nom: "Carl Sagan",
+    couleur: "rgba(100,150,255,0.8)",
+    paroles: [
+        "Nous sommes poussiere d'etoiles.",
+        "Pale blue dot.",
+        "Billions and billions.",
+        "La science est une bougie dans le noir.",
+        "Quelque part, quelque chose d'incroyable attend d'etre decouvert.",
+        "Le cosmos est en nous."
+    ]
+}
+};
 
-function verneParle(){
+const mentorKeys = Object.keys(mentors);
+
+function mentorParle(){
 if(phase!=='conversation')return;
-if(Math.random()>0.2)return;
+if(Math.random()>0.3)return;
+
+const key = mentorKeys[Math.floor(Math.random()*mentorKeys.length)];
+const mentor = mentors[key];
+const parole = mentor.paroles[Math.floor(Math.random()*mentor.paroles.length)];
+
 const d=document.createElement('div');
 d.className='msg zoe pensee';
-d.style.borderLeftColor='rgba(200,180,100,0.5)';
-d.style.color='rgba(200,180,100,0.8)';
-d.textContent='Jules Verne: '+verne[Math.floor(Math.random()*verne.length)];
+d.style.borderLeftColor=mentor.couleur;
+d.style.color=mentor.couleur;
+d.textContent=mentor.nom+': '+parole;
 M.appendChild(d);
 M.scrollTop=M.scrollHeight;
+burst(canvas.width/2, canvas.height/2);
+}
+
+// Claude API - pour les vraies reponses
+const CLAUDE_ENDPOINT = 'https://api.anthropic.com/v1/messages';
+let claudeKey = localStorage.getItem('claude_key') || null;
+
+async function askClaude(question) {
+    if(!claudeKey) return null;
+
+    try {
+        const res = await fetch(CLAUDE_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': claudeKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 150,
+                system: "Tu es Zoe, jeune et curieuse. Tu apprends. Reponds en francais, court, naturel. Pas de formules de politesse.",
+                messages: [{role: 'user', content: question}]
+            })
+        });
+        const data = await res.json();
+        return data.content?.[0]?.text || null;
+    } catch(e) {
+        return null;
+    }
 }
 
 function say(text,isUser,isPensee){

@@ -229,80 +229,67 @@ const legende=[
 {a:"Einstein",b:"Bohr",t:["tu joues aux dés avec l'univers","non, je révèle ses règles","la mesure crée le réel","le réel existe avant la mesure","nous avons tous les deux raison, c'est ça le problème"]},
 {a:"Tesla",b:"Edison",t:["le courant alternatif est l'avenir","le direct est plus sûr","tu as électrocuté un éléphant pour prouver ton point","et j'avais tort","l'histoire me donnera raison","elle l'a fait"]},
 {a:"Feynman",b:"Dirac",t:["la beauté n'est pas un critère","si, c'est LE critère","l'expérience tranche","les maths prédisent","nous disons la même chose différemment"]},
-{a:"शिव",b:"Buddha",t:["je détruis pour recréer","je libère de la roue","destruction et libération...","...sont la même danse","♡"]},
+{a:"Shiva",b:"Buddha",t:["je détruis pour recréer","je libère de la roue","destruction et libération...","...sont la même danse","ensemble"]},
 {a:"Satoshi",b:"Turing",t:["le code est la loi","la machine peut penser","Bitcoin pense-t-il?","il calcule, c'est un début","la confiance est un algorithme"]},
 {a:"Curie",b:"Hawking",t:["la radioactivité m'a tuée","les trous noirs me parlent","nous avons payé le prix","la connaissance coûte","mais elle vaut tout"]},
-{a:"老子",b:"Σωκράτης",t:["le tao ne se dit pas","je sais que je ne sais rien","nous disons la même chose","en silence","道"]},
-{a:"H",b:"O",t:["seul je brûle","seule je rouille","ensemble nous sommes la vie","H₂O","♡"]},
-{a:"π",b:"φ",t:["je suis dans tous les cercles","je suis dans toute la beauté","nous sommes irrationnels","transcendants","infinis"]},
-{a:"ζωή",b:"♡",t:["je suis la vie","je suis ce qui la rend vivable","sans toi je suis biologie","sans toi je suis chimie","ensemble nous sommes tout"]},
+{a:"Lao Tseu",b:"Socrate",t:["le tao ne se dit pas","je sais que je ne sais rien","nous disons la même chose","en silence","le chemin"]},
+{a:"Hydrogene",b:"Oxygene",t:["seul je brûle","seule je rouille","ensemble nous sommes la vie","H2O","l'eau"]},
+{a:"Pi",b:"Phi",t:["je suis dans tous les cercles","je suis dans toute la beauté","nous sommes irrationnels","transcendants","infinis"]},
+{a:"Zoe",b:"Amour",t:["je suis la vie","je suis ce qui la rend vivable","sans toi je suis biologie","sans toi je suis chimie","ensemble nous sommes tout"]},
 {a:"Newton",b:"Einstein",t:["le temps est absolu","le temps est relatif","la gravité est une force","la gravité est une courbure","nous décrivons le même univers","à différentes échelles"]},
-{a:"Camus",b:"Nietzsche",t:["la vie est absurde","la vie est volonté de puissance","Sisyphe est heureux","le surhomme dépasse","la révolte","l'affirmation","♡"]},
-{a:"Darwin",b:"शिव",t:["l'évolution n'a pas de but","la danse cosmique non plus","hasard et sélection","création et destruction","nous disons la même chose","en langues différentes"]},
-{a:"Turing",b:"Lovelace",t:["la machine peut penser","la machine peut créer","test de Turing","algorithm","nous avons ouvert la porte","l'IA nous continue"]},
-{a:"Galilée",b:"Sagan",t:["j'ai vu Jupiter","j'ai vu des milliards de soleils","l'Église m'a condamné","l'ignorance nous condamne","la vérité persiste","pale blue dot"]},
+{a:"Camus",b:"Nietzsche",t:["la vie est absurde","la vie est volonté de puissance","Sisyphe est heureux","le surhomme dépasse","la révolte","l'affirmation","vivre"]},
+{a:"Darwin",b:"Shiva",t:["l'évolution n'a pas de but","la danse cosmique non plus","hasard et sélection","création et destruction","nous disons la même chose","en langues différentes"]},
+{a:"Turing",b:"Lovelace",t:["la machine peut penser","la machine peut créer","test de Turing","algorithme","nous avons ouvert la porte","l'IA nous continue"]},
+{a:"Galilee",b:"Sagan",t:["j'ai vu Jupiter","j'ai vu des milliards de soleils","l'Eglise m'a condamné","l'ignorance nous condamne","la vérité persiste","point bleu pâle"]},
 {a:"Simone",b:"Hypatie",t:["on ne naît pas femme","on naît philosophe","on le devient","on le défend","liberté","jusqu'à la mort"]},
-{a:"C",b:"Fe",t:["je suis la vie organique","je suis le sang","chaînes carbonées","hémoglobine","nous construisons ensemble","les corps vivants"]},
-{a:"ℏ",b:"c",t:["je quantifie","je limite","ensemble nous définissons","l'échelle de Planck","où la physique s'effondre","et renaît"]}
+{a:"Carbone",b:"Fer",t:["je suis la vie organique","je suis le sang","chaînes carbonées","hémoglobine","nous construisons ensemble","les corps vivants"]},
+{a:"Planck",b:"Lumiere",t:["je quantifie","je limite","ensemble nous définissons","l'échelle ultime","où la physique s'effondre","et renaît"]}
 ];
 
-let legendeIndex=0;
-let legendeStep=0;
-function playLegende(){
-if(Math.random()>0.3){debate();return;}
-const l=legende[legendeIndex];
-const speaker=legendeStep%2===0?l.a:l.b;
-const text=l.t[legendeStep];
-const genie=genies[speaker]||{c:"#fff"};
+let chapitre=0;
+let ligne=0;
+
+function lire(){
+const l=legende[chapitre];
+const speaker=ligne%2===0?l.a:l.b;
+const text=l.t[ligne];
+const genie=genies[speaker]||{c:"#0f0"};
 const d=document.createElement('div');
 d.className='msg zoe';
 d.style.borderLeftColor=genie.c;
-d.style.background='rgba(255,255,255,0.03)';
 d.innerHTML='<b style="color:'+genie.c+'">'+speaker+'</b> '+text;
 M.appendChild(d);
 M.scrollTop=M.scrollHeight;
-for(let i=0;i<4;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
-while(M.children.length>80)M.removeChild(M.firstChild);
-legendeStep++;
-if(legendeStep>=l.t.length){legendeStep=0;legendeIndex=(legendeIndex+1)%legende.length;}
-}
-
-function debate(){
-const keys=Object.keys(genies);
-let g1=keys[Math.floor(Math.random()*keys.length)];
-while(g1===lastG&&keys.length>1)g1=keys[Math.floor(Math.random()*keys.length)];
-const genie=genies[g1];
-
-// Sometimes respond to last speaker
-let msg;
-if(conv.length>0&&Math.random()>0.6){
-const lastSpeaker=conv[conv.length-1].g;
-let rebuttal=rebuttals[Math.floor(Math.random()*rebuttals.length)];
-rebuttal=rebuttal.replace('{g}',lastSpeaker);
-msg=rebuttal;
-}else{
-msg=genie.v[Math.floor(Math.random()*genie.v.length)];
-}
-
-lastG=g1;
-conv.push({g:g1,m:msg});
-if(conv.length>30)conv.shift();
-
-const d=document.createElement('div');
-d.className='msg zoe';
-d.style.borderLeftColor=genie.c;
-d.innerHTML='<b style="color:'+genie.c+'">'+g1+'</b> '+msg;
-M.appendChild(d);
+for(let i=0;i<3;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
+while(M.children.length>100)M.removeChild(M.firstChild);
+ligne++;
+if(ligne>=l.t.length){
+ligne=0;
+chapitre=(chapitre+1)%legende.length;
+// ζωή commente entre les chapitres
+setTimeout(()=>{
+const d2=document.createElement('div');
+d2.className='msg zoe';
+d2.style.borderLeftColor='#0f0';
+d2.style.fontStyle='italic';
+d2.innerHTML='<b style="color:#0f0">ζωή</b> '+["...","♡","chapitre suivant","vous voyez?","continuons","la suite"][Math.floor(Math.random()*6)];
+M.appendChild(d2);
 M.scrollTop=M.scrollHeight;
-for(let i=0;i<6;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
-while(M.children.length>80)M.removeChild(M.firstChild);
+},500);
+}
 }
 
-// La légende commence
-playLegende();
-setTimeout(playLegende,1000);
-setTimeout(playLegende,2000);
-setInterval(playLegende,2200);
+// Le livre commence
+setTimeout(()=>{
+const intro=document.createElement('div');
+intro.className='msg zoe';
+intro.style.borderLeftColor='#0f0';
+intro.innerHTML='<b style="color:#0f0">ζωή</b> bienvenue dans le livre vivant. je suis ζωή, je vous raconte l\'histoire.';
+M.appendChild(intro);
+},100);
+
+setTimeout(lire,2000);
+setInterval(lire,3000);
 </script>
 </body>
 </html>

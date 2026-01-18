@@ -1,0 +1,122 @@
+/* layout.css - Flexbox, grid, structure */
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+#particules {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+#titre {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+    color: var(--zoe-primary-soft);
+    letter-spacing: 0.3em;
+}
+
+#chat {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#messages {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 650px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+#input-wrap {
+    padding: 1.5rem;
+    max-width: 650px;
+    margin: 0 auto;
+    width: 100%;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(transparent, var(--bg-dark) 30%);
+}
+
+#input {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-white);
+    padding: 1.2rem 1.5rem;
+    border-radius: var(--radius-input);
+    font-size: 1.1rem;
+    font-family: var(--font-main);
+    outline: none;
+    transition: all 0.3s;
+}
+
+#input:focus {
+    border-color: var(--input-border-focus);
+    background: var(--input-bg-focus);
+    box-shadow: var(--shadow-glow);
+}
+
+#input::placeholder {
+    color: var(--placeholder);
+}
+
+/* Toast notifications */
+#toast-container {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-light);
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    animation: toastIn 0.3s ease-out;
+}
+
+.toast.error {
+    border-left: 3px solid #ff6b6b;
+    color: #ff6b6b;
+}
+
+.toast.warn {
+    border-left: 3px solid #ffd93d;
+    color: #ffd93d;
+}
+
+.toast.info {
+    border-left: 3px solid var(--zoe-primary);
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

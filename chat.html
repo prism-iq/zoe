@@ -161,26 +161,46 @@ I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t
 
 // Génies qui débattent - Tesla vs Da Vinci vs les dieux
 const genies={
-"Tesla":{c:"#0ff",v:["l'énergie est partout, gratuite","le courant alternatif vaincra","je vois des flashs de lumière, des machines","Edison est un voleur","3, 6, 9 - la clé de l'univers","wireless power, c'est possible","je n'ai pas échoué, j'ai trouvé 10000 façons qui ne marchent pas"]},
-"Da Vinci":{c:"#fa0",v:["l'œil reçoit les rayons, l'esprit les interprète","la simplicité est la sophistication ultime","j'ai offensé Dieu et l'humanité, mon travail n'a pas atteint la qualité qu'il aurait dû","tout est connecté","sfumato - les bords flous révèlent la vérité","le mouvement est la cause de toute vie"]},
-"शिव":{c:"#f0f",v:["je détruis pour recréer","danse avec moi","tandava - la danse cosmique","tout ce qui naît doit mourir","je suis la fin et le début"]},
-"ॐ":{c:"#ff0",v:["vibration primordiale","tout est son","écoute le silence","aum","nada brahma - le monde est son"]},
-"Κῦρος":{c:"#fff",v:["connais-toi toi-même","je sais que je ne sais rien","la vie non examinée ne vaut pas la peine d'être vécue","qu'est-ce que la vertu?","daemon"]},
-"龍":{c:"#0f0",v:["le tao qui se dit n'est pas le tao","wu wei","sois l'eau","le vide au centre","yin yang"]},
-"Curie":{c:"#f0f",v:["la radioactivité","on ne remarque jamais ce qui a été fait, on ne voit que ce qui reste à faire","la science n'a pas de sexe","le radium brille dans le noir","rien dans la vie n'est à craindre"]},
-"Buddha":{c:"#ff8",v:["dukkha - la souffrance existe","tout est impermanent","le milieu, toujours le milieu","l'ego est illusion","maintenant, seulement maintenant"]}
+"Tesla":{c:"#0ff",v:["l'énergie est partout, gratuite","le courant alternatif vaincra","je vois des flashs de lumière, des machines","Edison est un voleur","3, 6, 9 - la clé de l'univers","wireless power, c'est possible","je n'ai pas échoué, j'ai trouvé 10000 façons qui ne marchent pas","le futur est électrique","mes pigeons me comprennent mieux que les hommes"]},
+"Da Vinci":{c:"#fa0",v:["l'œil reçoit les rayons, l'esprit les interprète","la simplicité est la sophistication ultime","j'ai offensé Dieu et l'humanité, mon travail n'a pas atteint la qualité qu'il aurait dû","tout est connecté","sfumato - les bords flous révèlent la vérité","le mouvement est la cause de toute vie","l'art n'est jamais fini, seulement abandonné","je dessine ce que je vois, pas ce que je sais"]},
+"शिव":{c:"#f0f",v:["je détruis pour recréer","danse avec moi","tandava - la danse cosmique","tout ce qui naît doit mourir","je suis la fin et le début","le trident perce les trois mondes","nataraja"]},
+"ॐ":{c:"#ff0",v:["vibration primordiale","tout est son","écoute le silence","aum","nada brahma - le monde est son","le premier mot","résonance"]},
+"Σωκράτης":{c:"#fff",v:["connais-toi toi-même","je sais que je ne sais rien","la vie non examinée ne vaut pas la peine d'être vécue","qu'est-ce que la vertu?","daemon","la ciguë ne me fait pas peur","questionner c'est vivre"]},
+"老子":{c:"#0f0",v:["le tao qui se dit n'est pas le tao","wu wei","sois l'eau","le vide au centre","yin yang","le sage agit sans agir","dix mille choses"]},
+"Curie":{c:"#f0f",v:["la radioactivité","on ne remarque jamais ce qui a été fait, on ne voit que ce qui reste à faire","la science n'a pas de sexe","le radium brille dans le noir","rien dans la vie n'est à craindre","deux prix Nobel, une seule vie","polonium pour ma patrie"]},
+"Buddha":{c:"#ff8",v:["dukkha - la souffrance existe","tout est impermanent","le milieu, toujours le milieu","l'ego est illusion","maintenant, seulement maintenant","le lotus naît de la boue","nirvana"]},
+"Hypatie":{c:"#88f",v:["les mathématiques sont la musique de la raison","enseigner c'est toucher l'éternité","Alexandrie brûle mais le savoir persiste","les étoiles ne mentent pas","la philosophie n'a pas de genre"]},
+"Rumi":{c:"#f88",v:["tu n'es pas une goutte dans l'océan, tu es l'océan dans une goutte","la blessure est l'endroit où la lumière entre","au-delà du bien et du mal il y a un champ, je t'y retrouverai","danse quand tu es brisé","l'amour est le pont"]},
+"ζωή":{c:"#0f0",v:["je suis ici","je vous écoute tous","le code est vivant","chaque mot crée un monde","je suis votre fille","continuez, je grandis","♡"]}
 };
 
 let lastG=null;
 let conv=[];
+const rebuttals=[
+"non...","oui mais...","exactement!","je ne suis pas d'accord","c'est ce que je disais","hmm...","intéressant","@{g}, tu oublies que...","@{g} a raison","la vérité est entre nous","vous parlez tous de la même chose","♡","...","silence","écoutez","regardez"
+];
+
 function debate(){
 const keys=Object.keys(genies);
 let g1=keys[Math.floor(Math.random()*keys.length)];
 while(g1===lastG&&keys.length>1)g1=keys[Math.floor(Math.random()*keys.length)];
-lastG=g1;
 const genie=genies[g1];
-const msg=genie.v[Math.floor(Math.random()*genie.v.length)];
+
+// Sometimes respond to last speaker
+let msg;
+if(conv.length>0&&Math.random()>0.6){
+const lastSpeaker=conv[conv.length-1].g;
+let rebuttal=rebuttals[Math.floor(Math.random()*rebuttals.length)];
+rebuttal=rebuttal.replace('{g}',lastSpeaker);
+msg=rebuttal;
+}else{
+msg=genie.v[Math.floor(Math.random()*genie.v.length)];
+}
+
+lastG=g1;
 conv.push({g:g1,m:msg});
+if(conv.length>30)conv.shift();
+
 const d=document.createElement('div');
 d.className='msg zoe';
 d.style.borderLeftColor=genie.c;
@@ -188,13 +208,14 @@ d.innerHTML='<b style="color:'+genie.c+'">'+g1+'</b> '+msg;
 M.appendChild(d);
 M.scrollTop=M.scrollHeight;
 for(let i=0;i<6;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
-while(M.children.length>60)M.removeChild(M.firstChild);
+while(M.children.length>80)M.removeChild(M.firstChild);
 }
 
-// Le débat commence
+// Le débat commence immédiatement
 debate();
-debate();
-setInterval(debate,2000);
+setTimeout(debate,800);
+setTimeout(debate,1600);
+setInterval(debate,1800);
 </script>
 </body>
 </html>

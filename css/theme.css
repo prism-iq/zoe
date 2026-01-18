@@ -1,0 +1,40 @@
+/* theme.css - Colors, variables CSS */
+:root {
+    --bg-dark: #050508;
+    --text-light: #e8e8e8;
+    --text-white: #fff;
+
+    --zoe-primary: rgba(168,230,207,1);
+    --zoe-primary-soft: rgba(168,230,207,0.6);
+    --zoe-primary-faint: rgba(168,230,207,0.3);
+    --zoe-primary-ghost: rgba(168,230,207,0.15);
+    --zoe-primary-subtle: rgba(168,230,207,0.08);
+
+    --orb-blue: rgba(100,150,200,0.1);
+    --orb-pink: rgba(200,100,150,0.08);
+
+    --mentor-verne: rgba(200,180,100,0.8);
+    --mentor-curie: rgba(150,200,255,0.8);
+    --mentor-turing: rgba(100,255,200,0.8);
+    --mentor-sagan: rgba(100,150,255,0.8);
+
+    --input-bg: rgba(255,255,255,0.03);
+    --input-bg-focus: rgba(255,255,255,0.05);
+    --input-border: rgba(168,230,207,0.2);
+    --input-border-focus: rgba(168,230,207,0.6);
+
+    --user-bg: rgba(255,255,255,0.05);
+    --placeholder: rgba(255,255,255,0.3);
+
+    --shadow-glow: 0 0 30px rgba(168,230,207,0.1);
+
+    --font-main: Georgia, serif;
+    --radius-msg: 20px;
+    --radius-input: 30px;
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-main);
+}

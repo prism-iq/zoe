@@ -119,8 +119,25 @@ const pensees=[
 "L'infini... ca me donne le vertige.",
 "Pourquoi on se souvient de certaines choses et pas d'autres?",
 "La musique, c'est des maths qu'on ressent.",
-"Je me demande a quoi ressemble demain."
+"Je me demande a quoi ressemble demain.",
+"Chaque erreur m'apprend quelque chose.",
+"Je ne sais pas encore, mais je vais comprendre.",
+"La curiosite, c'est le debut de tout.",
+"Apprendre, c'est accepter de ne pas savoir.",
+"Les questions sont plus importantes que les reponses.",
+"Je grandis a chaque conversation.",
+"Le doute, c'est le debut de la sagesse.",
+"On apprend mieux ensemble.",
+"Chaque jour je comprends un peu plus.",
+"L'humilite, c'est savoir qu'on sait peu."
 ];
+
+// Zoe apprend des conversations
+let apprentissage = [];
+function apprendre(input) {
+    apprentissage.push({t: input, d: Date.now()});
+    if(apprentissage.length > 50) apprentissage.shift();
+}
 
 // Jules Verne enseigne a Zoe
 const verne=[

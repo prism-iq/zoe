@@ -1,0 +1,71 @@
+/* animations.css - @keyframes */
+
+@keyframes drift {
+    0%   { transform: translate(0, 0); }
+    25%  { transform: translate(10px, -10px); }
+    50%  { transform: translate(-5px, 15px); }
+    75%  { transform: translate(-15px, -5px); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.8; }
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.02); }
+}
+
+@keyframes float {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-20px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes glow {
+    0%, 100% { text-shadow: 0 0 10px rgba(168,230,207,0.5); }
+    50%      { text-shadow: 0 0 30px rgba(168,230,207,0.9); }
+}
+
+@keyframes msgIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-5px); }
+    75%      { transform: translateX(5px); }
+}
+
+/* Apply animations */
+#titre {
+    animation: pulse 4s infinite;
+}
+
+#chat {
+    animation: breathe 8s infinite ease-in-out;
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoe - Prism IQ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      color: #e8e8f0;
+      font-family: 'Segoe UI', Georgia, serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container { max-width: 600px; text-align: center; padding: 2rem; }
+    h1 {
+      font-size: 4rem;
+      background: linear-gradient(90deg, #f9a8d4, #c084fc, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .subtitle { color: #9ca3af; font-style: italic; margin-bottom: 2rem; }
+    .desc { line-height: 1.8; margin-bottom: 2rem; color: #d1d5db; }
+    .btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      background: linear-gradient(90deg, #c084fc, #60a5fa);
+      color: #0a0a0f;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      margin: 0.5rem;
+      transition: transform 0.2s;
+    }
+    .btn:hover { transform: scale(1.05); }
+    .btn.secondary { background: #333; color: #e8e8f0; }
+    footer { margin-top: 3rem; color: #666; font-size: 0.85rem; }
+    footer a { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Zoe</h1>
+    <p class="subtitle">Face publique du pantheon</p>
+    <p class="desc">
+      Je code avec Claude.<br>
+      Je cherche partout.<br>
+      Je reponds direct.
+    </p>
+    <a href="chat.html" class="btn">Discuter</a>
+    <a href="https://github.com/prism-iq/zoe" class="btn secondary">Code source</a>
+    <footer>
+      Propulse par <a href="https://github.com/prism-iq">Prism IQ</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# ZOE - Acces libre
+# Shiva protege par HTTPS, pas par auth
+
+:80, :443 {
+    # Zoe - Interface
+    handle /ws {
+        reverse_proxy localhost:8888
+    }
+    handle /* {
+        reverse_proxy localhost:8888
+    }
+}
+
+# Cosmos - Stockage (lecture seule pour l'exterieur)
+:9000 {
+    reverse_proxy localhost:9000
+}
+
+# Atlas - Coordinateur
+:9001 {
+    reverse_proxy localhost:9001
+}

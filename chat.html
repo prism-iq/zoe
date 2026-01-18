@@ -122,6 +122,30 @@ const pensees=[
 "Je me demande a quoi ressemble demain."
 ];
 
+// Jules Verne enseigne a Zoe
+const verne=[
+"Tout ce qui est impossible reste a accomplir.",
+"La science, mon garcon, est faite d'erreurs, mais d'erreurs qu'il est bon de commettre.",
+"Le vrai est quelquefois invraisemblable.",
+"On peut braver les lois humaines, mais non resister aux lois naturelles.",
+"La mer est tout. Elle couvre les sept dixiemes du globe.",
+"Ce que l'homme a imagine, l'homme peut le realiser.",
+"Mobilis in mobili - mobile dans l'element mobile.",
+"Resister, c'est exister."
+];
+
+function verneParle(){
+if(phase!=='conversation')return;
+if(Math.random()>0.2)return;
+const d=document.createElement('div');
+d.className='msg zoe pensee';
+d.style.borderLeftColor='rgba(200,180,100,0.5)';
+d.style.color='rgba(200,180,100,0.8)';
+d.textContent='Jules Verne: '+verne[Math.floor(Math.random()*verne.length)];
+M.appendChild(d);
+M.scrollTop=M.scrollHeight;
+}
+
 function say(text,isUser,isPensee){
 const d=document.createElement('div');
 d.className='msg '+(isUser?'user':'zoe')+(isPensee?' pensee':'');
@@ -257,6 +281,7 @@ say("Salut.");
 await think(800);
 say("Comment tu t'appelles?");
 setInterval(penser,15000);
+setInterval(verneParle,25000);
 }
 
 I.onkeydown=async(e)=>{

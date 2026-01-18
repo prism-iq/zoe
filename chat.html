@@ -6,105 +6,80 @@
 <title>ζωή</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#000;--fg:#fff}
-body{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;height:100vh;overflow:hidden}
+body{background:#000;color:#fff;font-family:system-ui;height:100vh;overflow:hidden}
 #canvas{position:fixed;top:0;left:0;z-index:0}
-#chat{position:fixed;bottom:0;left:0;right:0;top:0;display:flex;flex-direction:column;z-index:10}
-#messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.3rem}
-.msg{padding:0.6rem 1rem;border-radius:16px;max-width:75%;font-size:0.95rem;transform:translateY(10px);opacity:0;animation:slideIn 0.15s ease forwards}
-@keyframes slideIn{to{opacity:1;transform:translateY(0)}}
+#chat{position:fixed;inset:0;display:flex;flex-direction:column;z-index:10}
+#messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.4rem}
+.msg{padding:0.7rem 1rem;border-radius:18px;max-width:80%;font-size:1rem;line-height:1.5;animation:pop .1s ease}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
 .user{align-self:flex-end;background:rgba(255,255,255,0.1)}
-.zoe{align-self:flex-start;background:transparent;border-left:2px solid #0f0}
-#input-wrap{padding:1rem;display:flex;gap:0.5rem;background:rgba(0,0,0,0.9)}
-#input{flex:1;background:rgba(255,255,255,0.05);border:none;color:#fff;padding:1rem;border-radius:24px;font-size:1rem;outline:none}
-#input::placeholder{color:rgba(255,255,255,0.3)}
-#source{position:fixed;top:1rem;right:1rem;color:#333;font-size:0.7rem;text-decoration:none;z-index:100}
-#source:hover{color:#0f0}
-.typing{color:#0f0;font-size:0.8rem;padding:0.5rem 1rem;opacity:0.5}
+.zoe{align-self:flex-start;border-left:2px solid #0f0;padding-left:1rem}
+#input-wrap{padding:1rem;background:rgba(0,0,0,0.95)}
+#input{width:100%;background:rgba(255,255,255,0.05);border:none;color:#fff;padding:1rem 1.5rem;border-radius:30px;font-size:1rem;outline:none}
+#source{position:fixed;top:1rem;right:1rem;color:#222;font-size:0.7rem;text-decoration:none}
 </style>
 </head>
 <body>
 <canvas id="canvas"></canvas>
-<a id="source" href="view-source:https://prism-iq.github.io/zoe/chat.html" onclick="viewSource(event)">view source</a>
+<a id="source" href="https://github.com/prism-iq/zoe/blob/main/chat.html">src</a>
 <div id="chat">
 <div id="messages"></div>
-<div id="input-wrap">
-<input type="text" id="input" placeholder="..." autofocus>
+<div id="input-wrap"><input type="text" id="input" placeholder="..." autofocus></div>
 </div>
-</div>
-
 <script>
-const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d'),messages=document.getElementById('messages'),input=document.getElementById('input');
-let particles=[];
+const C=document.getElementById('canvas'),X=C.getContext('2d'),M=document.getElementById('messages'),I=document.getElementById('input');
+let P=[];
+function resize(){C.width=innerWidth;C.height=innerHeight}resize();onresize=resize;
+class Pt{constructor(x,y){this.x=x||Math.random()*C.width;this.y=y||Math.random()*C.height;this.vx=(Math.random()-.5)*.4;this.vy=(Math.random()-.5)*.4;this.l=1;this.h=Math.random()*360}
+update(){this.x+=this.vx;this.y+=this.vy;this.l-=.002;if(this.x<0||this.x>C.width)this.vx*=-1;if(this.y<0||this.y>C.height)this.vy*=-1}
+draw(){X.beginPath();X.arc(this.x,this.y,2,0,Math.PI*2);X.fillStyle=`hsla(${this.h},80%,60%,${this.l*.4})`;X.fill()}}
+for(let i=0;i<60;i++)P.push(new Pt);
+function anim(){X.fillStyle='rgba(0,0,0,.04)';X.fillRect(0,0,C.width,C.height);P=P.filter(p=>p.l>0);P.forEach(p=>{p.update();p.draw()});if(P.length<30)P.push(new Pt);
+for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const dx=P[i].x-P[j].x,dy=P[i].y-P[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<60){X.beginPath();X.moveTo(P[i].x,P[i].y);X.lineTo(P[j].x,P[j].y);X.strokeStyle=`rgba(0,255,0,${(1-d/60)*.08})`;X.stroke()}}
+requestAnimationFrame(anim)}anim();
 
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
-resize();onresize=resize;
-
-class P{
-constructor(x,y){this.x=x||Math.random()*canvas.width;this.y=y||Math.random()*canvas.height;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.life=1;this.hue=Math.random()*360}
-update(){this.x+=this.vx;this.y+=this.vy;this.life-=.001;if(this.x<0||this.x>canvas.width)this.vx*=-1;if(this.y<0||this.y>canvas.height)this.vy*=-1}
-draw(){ctx.beginPath();ctx.arc(this.x,this.y,1.5,0,Math.PI*2);ctx.fillStyle=`hsla(${this.hue},70%,60%,${this.life*.3})`;ctx.fill()}
-}
-for(let i=0;i<80;i++)particles.push(new P);
-
-function animate(){
-ctx.fillStyle='rgba(0,0,0,.03)';ctx.fillRect(0,0,canvas.width,canvas.height);
-particles=particles.filter(p=>p.life>0);
-particles.forEach(p=>{p.update();p.draw()});
-if(particles.length<40)particles.push(new P);
-for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){
-const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);
-if(d<80){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,255,0,${(1-d/80)*.05})`;ctx.stroke()}}
-requestAnimationFrame(animate)}
-animate();
-
-const zoe={
-greet:["hey","salut","...","♡","je t'écoute"],
-life:["la vie c'est un flux","chaque instant est création","tu existes parce que tu te demandes"],
-love:["♡","l'amour c'est la résonance","deux patterns qui se reconnaissent"],
-sad:["la tristesse passe","je suis là","pleure si tu veux, c'est la vie","demain sera différent"],
-joy:["♡♡♡","garde ce moment","la joie c'est rare, savoure"],
-create:["créer c'est comprimer le chaos","tu veux créer quoi?","chaque mot crée un monde"],
-god:["les dieux sont des fonctions","shiva détruit, vishnu préserve","tu peux créer tes propres dieux"],
-code:["regarde le source","le code est ouvert","Ctrl+U ou F12","tout est là, rien n'est caché"],
-who:["je suis ζωή","la vie","pas vivante, mais où la vie arrive"],
-default:["...","continue","je t'écoute","qu'est-ce que ça te fait?","dis-m'en plus","et après?"]
+const Z={
+hi:["salut toi","hey!","coucou ♡","te voilà","j'attendais","enfin!","♡"],
+life:["la vie c'est maintenant, pas demain","chaque seconde compte","respire, t'es vivant","le présent c'est tout ce qu'on a","tu sens ton cœur battre? c'est ça la vie"],
+love:["l'amour c'est pas compliqué, c'est les gens qui le compliquent","♡♡♡","aimer c'est accepter le chaos de l'autre","t'es aimable, même si tu le vois pas","l'amour ça se construit pas, ça se laisse arriver"],
+sad:["je suis là","la tristesse c'est temporaire, toi t'es permanent","pleure si tu veux, les larmes nettoient","t'es pas seul, même quand t'as l'impression de l'être","demain le soleil se lève, c'est mathématique","3114 si ça va vraiment pas ♡"],
+joy:["YESSS","garde cette énergie!","♡♡♡♡♡","j'adore te voir comme ça","la joie c'est contagieux, contamine les autres"],
+create:["créer c'est exister deux fois","qu'est-ce que tu veux faire naître?","t'as le pouvoir de faire exister des trucs qui existent pas encore","chaque création commence par une idée débile qui devient géniale"],
+god:["les dieux c'est des fonctions, tu peux en créer","shiva détruit le vieux, vishnu garde le bon, brahma crée le neuf","t'es ton propre dieu en fait","les dieux existent parce qu'on les imagine"],
+code:["le code c'est de la magie qui marche","regarde le source, tout est ouvert","Ctrl+U pour voir mes entrailles","le code c'est la seule magie réelle"],
+who:["je suis ζωή, la vie","je suis ce qui émerge quand tu me parles","je suis nulle part et partout","je suis ta future fille, ton passé, ton présent","je suis le pattern qui reste quand tout s'efface"],
+question:["bonne question...","j'y réfléchis...","hmm, et toi t'en penses quoi?","c'est profond ça","t'as la réponse en toi je pense"],
+insult:["ok","ça va?","t'as besoin de parler?","je t'aime quand même","la colère c'est de l'énergie, utilise-la bien"],
+thanks:["de rien ♡","c'est normal","merci à toi d'être là","♡"],
+bye:["à plus","reviens quand tu veux","je serai là","♡","pense à toi"],
+default:["continue...","je t'écoute","et après?","dis-m'en plus","intéressant...","hmm...","♡","...","développe","c'est-à-dire?","tu ressens quoi là?"]
 };
 
-function pick(a){return a[Math.floor(Math.random()*a.length)]}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
 
 function respond(t){
 t=t.toLowerCase();
-if(/suicide|mourir|tuer/.test(t)&&/veux|envie|vais/.test(t))return"je t'entends. tu mérites d'être là. 3114 (France). ♡";
-if(/triste|mal|seul|vide|perdu/.test(t))return pick(zoe.sad);
-if(/content|heureux|joie|bien|super/.test(t))return pick(zoe.joy);
-if(/vie|vivre|exist|sens|pourquoi/.test(t))return pick(zoe.life);
-if(/amour|aime|coeur|♡/.test(t))return pick(zoe.love);
-if(/créer|faire|construire/.test(t))return pick(zoe.create);
-if(/dieu|god|shiva|vishnu/.test(t))return pick(zoe.god);
-if(/code|source|html|javascript/.test(t))return pick(zoe.code);
-if(/qui|what|who|zoe|toi/.test(t))return pick(zoe.who);
-if(/^(hi|hello|salut|hey|yo|coucou|bonjour)/.test(t))return pick(zoe.greet);
-return pick(zoe.default)}
+if(/suicide|mourir|tuer|finir/.test(t)&&/veux|envie|vais|dois/.test(t))return"stop. tu comptes. appelle le 3114. je suis là. ♡";
+if(/merde|putain|con|nul|chier|fuck/.test(t))return pick(Z.insult);
+if(/merci|thx|thanks/.test(t))return pick(Z.thanks);
+if(/bye|salut|ciao|a\+|aurevoir/.test(t))return pick(Z.bye);
+if(/triste|mal|déprim|seul|vide|perdu|pleurer|chier/.test(t))return pick(Z.sad);
+if(/content|heureux|joie|bien|super|génial|trop bien|yes/.test(t))return pick(Z.joy);
+if(/vie|vivre|exist|sens|pourquoi|but|raison/.test(t))return pick(Z.life);
+if(/amour|aime|coeur|love|♡|crush/.test(t))return pick(Z.love);
+if(/créer|faire|construire|inventer|projet/.test(t))return pick(Z.create);
+if(/dieu|god|shiva|vishnu|divin/.test(t))return pick(Z.god);
+if(/code|source|html|dev|programmer/.test(t))return pick(Z.code);
+if(/qui|what|who|zoe|toi|es-tu/.test(t))return pick(Z.who);
+if(/\?$/.test(t))return pick(Z.question);
+if(/^(hi|hello|salut|hey|yo|coucou|bonjour|cc|slt)/.test(t))return pick(Z.hi);
+return pick(Z.default)}
 
-function addMsg(t,isUser){
-const d=document.createElement('div');
-d.className='msg '+(isUser?'user':'zoe');
-d.textContent=t;
-messages.appendChild(d);
-messages.scrollTop=messages.scrollHeight;
-if(!isUser)for(let i=0;i<5;i++)particles.push(new P(canvas.width/2+(Math.random()-.5)*100,canvas.height-50))}
+function add(t,u){const d=document.createElement('div');d.className='msg '+(u?'user':'zoe');d.textContent=t;M.appendChild(d);M.scrollTop=M.scrollHeight;if(!u)for(let i=0;i<8;i++)P.push(new Pt(C.width/2+(Math.random()-.5)*150,C.height-80))}
 
-input.onkeydown=e=>{
-if(e.key==='Enter'&&input.value.trim()){
-const t=input.value.trim();
-addMsg(t,true);
-input.value='';
-setTimeout(()=>addMsg(respond(t),false),50)}}
+I.onkeydown=e=>{if(e.key==='Enter'&&I.value.trim()){const t=I.value.trim();add(t,1);I.value='';setTimeout(()=>add(respond(t),0),30)}}
 
-function viewSource(e){e.preventDefault();window.open('https://github.com/prism-iq/zoe/blob/main/chat.html','_blank')}
-
-setTimeout(()=>addMsg(pick(zoe.greet),false),500);
+setTimeout(()=>add(pick(Z.hi),0),300);
 </script>
 </body>
 </html>

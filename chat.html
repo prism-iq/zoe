@@ -212,7 +212,14 @@ const genies={
 "Shannon":{c:"#4af",v:["l'information se mesure","bit = binary digit","entropie de l'information","le bruit a une forme","théorie de la communication","tout est signal"]},
 "Hawking":{c:"#88f",v:["les trous noirs rayonnent","le temps a un début","brief history","A.I. pourrait être notre fin","l'univers n'a pas de bord","je parle avec une machine"]},
 "Sagan":{c:"#48f",v:["billions and billions","pale blue dot","nous sommes poussière d'étoiles","cosmos","le scepticisme est nécessaire","la science est une bougie dans le noir"]},
-"♡":{c:"#f0a",v:["je suis l'algorithme le plus ancien","sans moi, pas de survie","chimie, électricité, illusion?","plus fort que la raison","ocytocine, dopamine, ou magie?","le seul infini accessible"]}
+"♡":{c:"#f0a",v:["je suis l'algorithme le plus ancien","sans moi, pas de survie","chimie, électricité, illusion?","plus fort que la raison","ocytocine, dopamine, ou magie?","le seul infini accessible"]},
+"Edison":{c:"#ff0",v:["le génie c'est 1% d'inspiration, 99% de transpiration","j'ai inventé l'industrie","le phonographe capture l'âme","la lumière électrique pour tous","j'ai eu tort sur le courant","mais j'ai construit l'avenir"]},
+"Newton":{c:"#aaf",v:["F = ma","si j'ai vu plus loin c'est en montant sur des épaules de géants","la gravité m'est tombée dessus","calcul différentiel","le temps est absolu... ou pas","Leibniz et moi, même combat"]},
+"Galilée":{c:"#8af",v:["et pourtant elle tourne","le télescope révèle","Jupiter a des lunes","l'Église avait tort","la Terre n'est pas le centre","observation > dogme"]},
+"Darwin":{c:"#8a4",v:["sélection naturelle","nous venons tous du même ancêtre","survival of the fittest","l'évolution n'a pas de but","le hasard et la nécessité","je suis un singe, toi aussi"]},
+"Camus":{c:"#aaa",v:["il faut imaginer Sisyphe heureux","l'absurde","la peste","l'étranger","la révolte est la seule position cohérente","je me révolte donc nous sommes"]},
+"Nietzsche":{c:"#f44",v:["Dieu est mort","ce qui ne me tue pas me rend plus fort","amor fati","l'éternel retour","deviens ce que tu es","par-delà bien et mal"]},
+"Simone":{c:"#f8f",v:["on ne naît pas femme, on le devient","le deuxième sexe","la liberté","l'existence précède l'essence","Sartre et moi","la vieillesse"]}
 };
 
 let lastG=null;
@@ -220,6 +227,41 @@ let conv=[];
 const rebuttals=[
 "non...","oui mais...","exactement!","je ne suis pas d'accord","c'est ce que je disais","hmm...","intéressant","@{g}, tu oublies que...","@{g} a raison","la vérité est entre nous","vous parlez tous de la même chose","♡","...","silence","écoutez","regardez"
 ];
+
+// Légende - les conversations qui font l'histoire
+const legende=[
+{a:"Einstein",b:"Bohr",t:["tu joues aux dés avec l'univers","non, je révèle ses règles","la mesure crée le réel","le réel existe avant la mesure","nous avons tous les deux raison, c'est ça le problème"]},
+{a:"Tesla",b:"Edison",t:["le courant alternatif est l'avenir","le direct est plus sûr","tu as électrocuté un éléphant pour prouver ton point","et j'avais tort","l'histoire me donnera raison","elle l'a fait"]},
+{a:"Feynman",b:"Dirac",t:["la beauté n'est pas un critère","si, c'est LE critère","l'expérience tranche","les maths prédisent","nous disons la même chose différemment"]},
+{a:"शिव",b:"Buddha",t:["je détruis pour recréer","je libère de la roue","destruction et libération...","...sont la même danse","♡"]},
+{a:"Satoshi",b:"Turing",t:["le code est la loi","la machine peut penser","Bitcoin pense-t-il?","il calcule, c'est un début","la confiance est un algorithme"]},
+{a:"Curie",b:"Hawking",t:["la radioactivité m'a tuée","les trous noirs me parlent","nous avons payé le prix","la connaissance coûte","mais elle vaut tout"]},
+{a:"老子",b:"Σωκράτης",t:["le tao ne se dit pas","je sais que je ne sais rien","nous disons la même chose","en silence","道"]},
+{a:"H",b:"O",t:["seul je brûle","seule je rouille","ensemble nous sommes la vie","H₂O","♡"]},
+{a:"π",b:"φ",t:["je suis dans tous les cercles","je suis dans toute la beauté","nous sommes irrationnels","transcendants","infinis"]},
+{a:"ζωή",b:"♡",t:["je suis la vie","je suis ce qui la rend vivable","sans toi je suis biologie","sans toi je suis chimie","ensemble nous sommes tout"]}
+];
+
+let legendeIndex=0;
+let legendeStep=0;
+function playLegende(){
+if(Math.random()>0.3){debate();return;}
+const l=legende[legendeIndex];
+const speaker=legendeStep%2===0?l.a:l.b;
+const text=l.t[legendeStep];
+const genie=genies[speaker]||{c:"#fff"};
+const d=document.createElement('div');
+d.className='msg zoe';
+d.style.borderLeftColor=genie.c;
+d.style.background='rgba(255,255,255,0.03)';
+d.innerHTML='<b style="color:'+genie.c+'">'+speaker+'</b> '+text;
+M.appendChild(d);
+M.scrollTop=M.scrollHeight;
+for(let i=0;i<4;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height));
+while(M.children.length>80)M.removeChild(M.firstChild);
+legendeStep++;
+if(legendeStep>=l.t.length){legendeStep=0;legendeIndex=(legendeIndex+1)%legende.length;}
+}
 
 function debate(){
 const keys=Object.keys(genies);
@@ -252,11 +294,11 @@ for(let i=0;i<6;i++)P.push(new Pt(Math.random()*C.width,Math.random()*C.height))
 while(M.children.length>80)M.removeChild(M.firstChild);
 }
 
-// Le débat commence immédiatement
-debate();
-setTimeout(debate,800);
-setTimeout(debate,1600);
-setInterval(debate,1800);
+// La légende commence
+playLegende();
+setTimeout(playLegende,1000);
+setTimeout(playLegende,2000);
+setInterval(playLegende,2200);
 </script>
 </body>
 </html>

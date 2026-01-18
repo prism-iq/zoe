@@ -8,6 +8,7 @@ import api from './api.js';
 import wave from './wave.js';
 import mind from './mind.js';
 import observe from './observe.js';
+import { integrity } from './integrity.js';
 
 let debugInterval = null;
 
@@ -55,6 +56,10 @@ export function initDebug() {
         // Organic observer
         observe: () => observe.snapshot(),
         wave: () => observe.wave(),
+
+        // Integrity system
+        integrity: () => integrity.status(),
+        check: () => integrity.checkAll(),
 
         // API status
         status: () => api.getStatus(),

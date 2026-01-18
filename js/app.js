@@ -9,6 +9,8 @@ import activity from './activity.js';
 import mind from './mind.js';
 import debug from './debug.js';
 import observe from './observe.js';
+import { init as initIntegrity, integrity } from './integrity.js';
+import { TIMING, PHI } from './constants.js';
 import { respond } from './handlers.js';
 
 // App version
@@ -42,6 +44,10 @@ async function init() {
 
         // Setup hot reload
         setupHotReload();
+
+        // Initialize integrity system
+        initIntegrity();
+        integrity.startMonitoring(TIMING.BREATH);
 
         // Check network status
         if (!state.isOnline) {

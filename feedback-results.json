@@ -1,0 +1,286 @@
+{
+  "timestamp": "2026-01-18T04:27:05.543Z",
+  "files": [
+    {
+      "name": "activity.js",
+      "issues": [
+        {
+          "file": "activity.js",
+          "line": 48,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 79,
+        "functions": 9,
+        "imports": 1,
+        "exports": 6
+      }
+    },
+    {
+      "name": "api.js",
+      "issues": [
+        {
+          "file": "api.js",
+          "line": 9,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "api.js",
+          "line": 10,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "api.js",
+          "line": 57,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "api.js",
+          "line": 61,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 142,
+        "functions": 15,
+        "imports": 3,
+        "exports": 5
+      }
+    },
+    {
+      "name": "app.js",
+      "issues": [],
+      "metrics": {
+        "lines": 93,
+        "functions": 8,
+        "imports": 8,
+        "exports": 1
+      }
+    },
+    {
+      "name": "data.js",
+      "issues": [],
+      "metrics": {
+        "lines": 116,
+        "functions": 0,
+        "imports": 0,
+        "exports": 7
+      }
+    },
+    {
+      "name": "debug.js",
+      "issues": [
+        {
+          "file": "debug.js",
+          "line": 61,
+          "rule": "console-log",
+          "message": "console.log found - consider using errors module",
+          "severity": "warn"
+        },
+        {
+          "file": "debug.js",
+          "line": 16,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 97,
+        "functions": 8,
+        "imports": 6,
+        "exports": 5
+      }
+    },
+    {
+      "name": "errors.js",
+      "issues": [
+        {
+          "file": "errors.js",
+          "line": 31,
+          "rule": "console-log",
+          "message": "console.log found - consider using errors module",
+          "severity": "warn"
+        },
+        {
+          "file": "errors.js",
+          "line": 91,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 128,
+        "functions": 22,
+        "imports": 0,
+        "exports": 1
+      }
+    },
+    {
+      "name": "handlers.js",
+      "issues": [
+        {
+          "file": "handlers.js",
+          "line": 39,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "handlers.js",
+          "line": 43,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "handlers.js",
+          "line": 56,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "handlers.js",
+          "line": 105,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "handlers.js",
+          "line": 121,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 205,
+        "functions": 19,
+        "imports": 4,
+        "exports": 2
+      }
+    },
+    {
+      "name": "mind.js",
+      "issues": [
+        {
+          "file": "mind.js",
+          "line": 48,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "mind.js",
+          "line": 48,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "mind.js",
+          "line": 75,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 119,
+        "functions": 15,
+        "imports": 4,
+        "exports": 5
+      }
+    },
+    {
+      "name": "particles.js",
+      "issues": [],
+      "metrics": {
+        "lines": 123,
+        "functions": 15,
+        "imports": 0,
+        "exports": 5
+      }
+    },
+    {
+      "name": "state.js",
+      "issues": [],
+      "metrics": {
+        "lines": 77,
+        "functions": 8,
+        "imports": 0,
+        "exports": 1
+      }
+    },
+    {
+      "name": "ui.js",
+      "issues": [],
+      "metrics": {
+        "lines": 149,
+        "functions": 21,
+        "imports": 1,
+        "exports": 13
+      }
+    },
+    {
+      "name": "wave.js",
+      "issues": [
+        {
+          "file": "wave.js",
+          "line": 16,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "wave.js",
+          "line": 19,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "wave.js",
+          "line": 32,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        },
+        {
+          "file": "wave.js",
+          "line": 32,
+          "rule": "magic-number",
+          "message": "Magic number - consider using named constant",
+          "severity": "info"
+        }
+      ],
+      "metrics": {
+        "lines": 63,
+        "functions": 5,
+        "imports": 1,
+        "exports": 6
+      }
+    }
+  ],
+  "summary": {
+    "totalFiles": 12,
+    "totalIssues": 21,
+    "errors": 0,
+    "warnings": 2,
+    "info": 19
+  }
+}

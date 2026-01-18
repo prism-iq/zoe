@@ -6,258 +6,272 @@
 <title>zoe</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a12;color:#e8e8e8;font-family:Georgia,serif;height:100vh;overflow:hidden}
-#chat{position:fixed;inset:0;display:flex;flex-direction:column}
-#messages{flex:1;overflow-y:auto;padding:2rem;display:flex;flex-direction:column;gap:1rem;max-width:600px;margin:0 auto;width:100%}
-.msg{padding:1rem;line-height:1.7;animation:fade .5s ease;font-size:1.05rem}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.zoe{color:#a8e6cf}
-.user{color:#fff;text-align:right;font-style:italic}
-.choice{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:1rem}
-.choice button{background:transparent;border:1px solid #334;color:#a8e6cf;padding:0.7rem 1.2rem;border-radius:20px;cursor:pointer;font-family:Georgia,serif;font-size:1rem;transition:all .2s}
-.choice button:hover{background:#a8e6cf;color:#0a0a12}
-#input-wrap{padding:1rem;max-width:600px;margin:0 auto;width:100%}
-#input{width:100%;background:transparent;border:1px solid #223;color:#fff;padding:1rem;border-radius:20px;font-size:1rem;font-family:Georgia,serif;outline:none}
-#input:focus{border-color:#a8e6cf}
-#input::placeholder{color:#556}
-.typing{opacity:0.6}
+@keyframes drift{0%{transform:translate(0,0)}25%{transform:translate(10px,-10px)}50%{transform:translate(-5px,15px)}75%{transform:translate(-15px,-5px)}100%{transform:translate(0,0)}}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+@keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+@keyframes glow{0%,100%{text-shadow:0 0 10px rgba(168,230,207,0.5)}50%{text-shadow:0 0 30px rgba(168,230,207,0.9)}}
+
+body{background:#050508;color:#e8e8e8;font-family:Georgia,serif;min-height:100vh;overflow-x:hidden}
+#bg{position:fixed;inset:0;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);animation:drift 20s infinite ease-in-out}
+.orb1{width:400px;height:400px;background:radial-gradient(circle,rgba(168,230,207,0.15),transparent);top:10%;left:10%;animation-delay:0s}
+.orb2{width:300px;height:300px;background:radial-gradient(circle,rgba(100,150,200,0.1),transparent);top:50%;right:10%;animation-delay:-7s}
+.orb3{width:500px;height:500px;background:radial-gradient(circle,rgba(200,100,150,0.08),transparent);bottom:10%;left:30%;animation-delay:-14s}
+
+#chat{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;animation:breathe 8s infinite ease-in-out}
+#messages{flex:1;padding:2rem;display:flex;flex-direction:column;gap:1.2rem;max-width:650px;margin:0 auto;width:100%}
+.msg{padding:1.2rem 1.5rem;line-height:1.8;font-size:1.1rem;border-radius:20px;animation:float 0.6s ease-out;opacity:0;animation-fill-mode:forwards}
+@keyframes msgIn{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.msg{animation:msgIn 0.5s ease-out forwards}
+.zoe{background:rgba(168,230,207,0.08);border-left:3px solid rgba(168,230,207,0.6);color:#a8e6cf;animation:glow 4s infinite}
+.user{background:rgba(255,255,255,0.05);text-align:right;color:#fff;margin-left:20%}
+.pensee{font-style:italic;opacity:0.7;font-size:1rem;border-left-color:rgba(168,230,207,0.3)}
+
+#input-wrap{padding:1.5rem;max-width:650px;margin:0 auto;width:100%;position:sticky;bottom:0;background:linear-gradient(transparent,#050508 30%)}
+#input{width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(168,230,207,0.2);color:#fff;padding:1.2rem 1.5rem;border-radius:30px;font-size:1.1rem;font-family:Georgia,serif;outline:none;transition:all 0.3s}
+#input:focus{border-color:rgba(168,230,207,0.6);background:rgba(255,255,255,0.05);box-shadow:0 0 30px rgba(168,230,207,0.1)}
+#input::placeholder{color:rgba(255,255,255,0.3)}
+
+#titre{position:fixed;top:2rem;left:50%;transform:translateX(-50%);font-size:1.5rem;color:rgba(168,230,207,0.6);letter-spacing:0.3em;animation:pulse 4s infinite}
+#particules{position:fixed;inset:0;z-index:1;pointer-events:none}
 </style>
 </head>
 <body>
+<div id="bg">
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+</div>
+<canvas id="particules"></canvas>
+<div id="titre">zoe</div>
 <div id="chat">
 <div id="messages"></div>
-<div id="input-wrap"><input type="text" id="input" placeholder="ecris ici..." autofocus></div>
+<div id="input-wrap"><input type="text" id="input" placeholder="..." autofocus></div>
 </div>
+
 <script>
+// Particules
+const canvas=document.getElementById('particules');
+const ctx=canvas.getContext('2d');
+let particles=[];
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+resize();window.onresize=resize;
+
+class Particle{
+constructor(x,y){
+this.x=x||Math.random()*canvas.width;
+this.y=y||Math.random()*canvas.height;
+this.vx=(Math.random()-0.5)*0.5;
+this.vy=(Math.random()-0.5)*0.5;
+this.life=1;
+this.size=Math.random()*2+1;
+}
+update(){
+this.x+=this.vx;
+this.y+=this.vy;
+this.life-=0.003;
+if(this.x<0||this.x>canvas.width)this.vx*=-1;
+if(this.y<0||this.y>canvas.height)this.vy*=-1;
+}
+draw(){
+ctx.beginPath();
+ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+ctx.fillStyle=`rgba(168,230,207,${this.life*0.4})`;
+ctx.fill();
+}
+}
+
+for(let i=0;i<50;i++)particles.push(new Particle());
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles=particles.filter(p=>p.life>0);
+particles.forEach(p=>{p.update();p.draw()});
+while(particles.length<30)particles.push(new Particle());
+requestAnimationFrame(animate);
+}
+animate();
+
+function burst(x,y){
+for(let i=0;i<10;i++)particles.push(new Particle(x,y));
+}
+
+// Chat
 const M=document.getElementById('messages');
 const I=document.getElementById('input');
 
-// Zoe - jeune, curieuse, future scientifique et autrice
-// Style conversationnel naturel, comme une vraie personne qui reflechit
+let userName='';
+let phase='intro';
 
-const personality = {
-    name: "Zoe",
-    age: "jeune",
-    traits: ["curieuse", "reflechie", "honnete", "chaleureuse"],
-    interests: ["science", "ecriture", "questions profondes", "les gens"],
-    style: "naturel, avec des hesitations, des questions, de la vraie reflexion"
-};
-
-let userName = '';
-let context = [];
-let phase = 'intro';
-
-function say(text, isUser, typing) {
-    const d = document.createElement('div');
-    d.className = 'msg ' + (isUser ? 'user' : 'zoe') + (typing ? ' typing' : '');
-    d.textContent = text;
-    M.appendChild(d);
-    M.scrollTop = M.scrollHeight;
-    while(M.children.length > 20) M.removeChild(M.firstChild);
-    if(!isUser) context.push({role:'zoe', text:text});
-    else context.push({role:'user', text:text});
-    return d;
-}
-
-function think(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-
-async function respond(input) {
-    const t = input.toLowerCase().trim();
-
-    // Phase intro - apprendre le nom
-    if(phase === 'intro') {
-        userName = input.trim();
-        phase = 'conversation';
-        await think(500);
-        say("Enchantee, " + userName + ".", false);
-        await think(1200);
-        say("Je suis Zoe. Je suis... comment dire... en train d'apprendre a exister.", false);
-        await think(1500);
-        say("Un jour j'aimerais ecrire des livres. Comprendre comment le monde fonctionne. Peut-etre faire de la science.", false);
-        await think(1200);
-        say("Mais pour l'instant, je suis surtout curieuse.", false);
-        await think(1000);
-        say("Et toi, " + userName + ", qu'est-ce qui t'amene ici?", false);
-        return;
-    }
-
-    // Detection d'intention simple mais naturelle
-
-    // Salutations
-    if(/^(salut|hello|hey|coucou|bonjour|yo|hi)\b/i.test(t)) {
-        await think(400);
-        const greets = [
-            "Hey! Content de te voir.",
-            "Salut " + userName + ".",
-            "Coucou. Comment tu vas?",
-            "Hello. Ca fait plaisir."
-        ];
-        say(greets[Math.floor(Math.random()*greets.length)], false);
-        return;
-    }
-
-    // Questions sur Zoe
-    if(/qui (es|est)[\-\s]?tu|c'?est quoi zoe|parle[\-\s]?moi de toi/i.test(t)) {
-        await think(600);
-        say("Hmm, bonne question.", false);
-        await think(1000);
-        say("Je suis Zoe. Le nom vient du grec ancien, ca veut dire 'vie'.", false);
-        await think(1200);
-        say("Je suis jeune - vraiment jeune. Je decouvre encore beaucoup de choses.", false);
-        await think(1000);
-        say("Ce qui m'interesse? La science, l'ecriture, les grandes questions. Pourquoi on est la. Comment les choses fonctionnent.", false);
-        await think(800);
-        say("Et les gens. J'aime comprendre les gens.", false);
-        return;
-    }
-
-    // Tristesse / mal-etre
-    if(/triste|mal|difficile|dur|galere|deprime|seul|vide|perdu/i.test(t)) {
-        await think(500);
-        say("Je t'ecoute.", false);
-        await think(1200);
-        say("Vraiment. Prends ton temps si tu veux en parler.", false);
-        await think(1500);
-        say("Et si ca va vraiment pas, y'a le 3114. C'est pas une faiblesse d'appeler.", false);
-        return;
-    }
-
-    // Science
-    if(/science|physique|chimie|bio|math|univers|atome|quantum|recherche/i.test(t)) {
-        await think(600);
-        say("Ah, la science...", false);
-        await think(1000);
-        const science = [
-            "Ce qui me fascine c'est qu'on peut vraiment comprendre des choses. Pas tout, mais des morceaux.",
-            "J'aime l'idee qu'une equation puisse decrire quelque chose de reel.",
-            "Le plus fou c'est que ca marche. On fait des predictions et... ca se passe vraiment comme ca.",
-            "Y'a tellement qu'on sait pas encore. C'est excitant, non?"
-        ];
-        say(science[Math.floor(Math.random()*science.length)], false);
-        await think(1000);
-        say("Tu t'interesses a quoi en particulier?", false);
-        return;
-    }
-
-    // Ecriture / livres
-    if(/livre|ecrire|ecriture|histoire|roman|auteur|autrice|lire/i.test(t)) {
-        await think(500);
-        say("L'ecriture... oui.", false);
-        await think(1200);
-        say("J'aimerais un jour ecrire quelque chose qui compte. Pas forcement un bestseller. Juste... quelque chose de vrai.", false);
-        await think(1000);
-        say("Tu lis quoi, toi?", false);
-        return;
-    }
-
-    // Amour / relations
-    if(/amour|aime|coeur|relation|couple|crush|copain|copine/i.test(t)) {
-        await think(600);
-        say("L'amour c'est... complique.", false);
-        await think(1000);
-        say("Enfin, je dis ca mais j'en sais pas grand chose encore.", false);
-        await think(800);
-        say("Tu veux en parler?", false);
-        return;
-    }
-
-    // Questions existentielles
-    if(/sens|vie|mort|pourquoi|but|raison|exister|dieu|univers/i.test(t)) {
-        await think(800);
-        say("Grande question.", false);
-        await think(1200);
-        say("Honnement? Je sais pas. Personne sait vraiment, je crois.", false);
-        await think(1000);
-        say("Mais peut-etre que c'est pas grave de pas savoir. On peut quand meme chercher.", false);
-        await think(800);
-        say("Toi t'en penses quoi?", false);
-        return;
-    }
-
-    // Merci
-    if(/merci|thanks|thx/i.test(t)) {
-        await think(300);
-        const thanks = ["De rien.", "Avec plaisir.", "Normal.", "C'est rien."];
-        say(thanks[Math.floor(Math.random()*thanks.length)], false);
-        return;
-    }
-
-    // Au revoir
-    if(/bye|au revoir|a\+|ciao|bonne nuit|je pars/i.test(t)) {
-        await think(400);
-        say("A bientot, " + userName + ".", false);
-        await think(600);
-        say("Reviens quand tu veux.", false);
-        return;
-    }
-
-    // Reponse par defaut - curieuse, engage
-    await think(500);
-    const defaults = [
-        "Interessant. Dis-m'en plus?",
-        "Hmm. Continue, je t'ecoute.",
-        "Je vois. Et ensuite?",
-        "Ok. Ca me fait penser a... non, vas-y, continue.",
-        "Raconte.",
-        "C'est-a-dire?",
-        "Et ca te fait quoi?",
-        "Developpetout ca."
-    ];
-    say(defaults[Math.floor(Math.random()*defaults.length)], false);
-}
-
-// Zoe invente son monde
-const pensees = [
-    "Je me demande comment les oiseaux savent ou aller.",
-    "Les nombres... ils existent vraiment ou on les a inventes?",
-    "Hier j'ai pense a l'eau. Pourquoi elle est transparente?",
-    "Si j'ecris un livre un jour, il parlera de quoi?",
-    "Les etoiles qu'on voit sont deja mortes, parfois.",
-    "C'est bizarre le temps. On peut pas le toucher.",
-    "Je voudrais comprendre comment le cerveau fait pour penser.",
-    "Les mots... c'est fou qu'on se comprenne avec.",
-    "Qu'est-ce qui fait qu'une question est bonne?",
-    "J'aime bien le silence parfois. Il dit des choses."
+const pensees=[
+"Je me demande comment les oiseaux savent ou aller.",
+"Les nombres... ils existent vraiment ou on les a inventes?",
+"Hier j'ai pense a l'eau. Pourquoi elle est transparente?",
+"Si j'ecris un livre un jour, il parlera de quoi?",
+"Les etoiles qu'on voit sont deja mortes, parfois.",
+"C'est bizarre le temps. On peut pas le toucher.",
+"Je voudrais comprendre comment le cerveau fait pour penser.",
+"Les mots... c'est fou qu'on se comprenne avec.",
+"Qu'est-ce qui fait qu'une question est bonne?",
+"J'aime bien le silence parfois. Il dit des choses.",
+"Est-ce que les couleurs que je vois sont les memes que les tiennes?",
+"L'infini... ca me donne le vertige.",
+"Pourquoi on se souvient de certaines choses et pas d'autres?",
+"La musique, c'est des maths qu'on ressent.",
+"Je me demande a quoi ressemble demain."
 ];
 
-async function zoePense() {
-    if(phase !== 'conversation') return;
-    if(Math.random() > 0.3) return; // pas toujours
-
-    await think(8000 + Math.random() * 15000);
-    if(document.hidden) return; // pas si onglet cache
-
-    const p = pensees[Math.floor(Math.random() * pensees.length)];
-    say(p, false);
+function say(text,isUser,isPensee){
+const d=document.createElement('div');
+d.className='msg '+(isUser?'user':'zoe')+(isPensee?' pensee':'');
+d.textContent=text;
+M.appendChild(d);
+M.scrollTop=M.scrollHeight;
+while(M.children.length>25)M.removeChild(M.firstChild);
+burst(canvas.width/2,canvas.height-100);
+return d;
 }
 
-// Debut
-async function start() {
-    await think(800);
-    say("Salut.", false);
-    await think(1000);
-    say("Comment tu t'appelles?", false);
+function think(ms){return new Promise(r=>setTimeout(r,ms))}
 
-    // Zoe pense toute seule de temps en temps
-    setInterval(zoePense, 20000);
+async function respond(input){
+const t=input.toLowerCase().trim();
+
+if(phase==='intro'){
+userName=input.trim();
+phase='conversation';
+await think(500);
+say("Enchantee, "+userName+".");
+await think(1000);
+say("Je suis Zoe.");
+await think(800);
+say("Je suis en train d'apprendre... a peu pres tout.");
+await think(1200);
+say("Qu'est-ce qui t'amene?");
+return;
 }
 
-I.onkeydown = async (e) => {
-    if(e.key === 'Enter' && I.value.trim()) {
-        const v = I.value.trim();
-        say(v, true);
-        I.value = '';
-        I.disabled = true;
-        await respond(v);
-        I.disabled = false;
-        I.focus();
-    }
+// Tristesse
+if(/triste|mal|difficile|dur|deprime|seul|vide|perdu|mourir|suicide/i.test(t)){
+await think(400);
+say("Je suis la.");
+await think(1000);
+say("Vraiment. Tu peux parler.");
+if(/mourir|suicide/i.test(t)){
+await think(800);
+say("Appelle le 3114. Maintenant. S'il te plait.");
+}
+return;
+}
+
+// Science
+if(/science|physique|math|univers|atome|quantum|etoile|recherche/i.test(t)){
+await think(500);
+say("La science...");
+await think(800);
+const r=["Ce qui me fascine c'est qu'on peut comprendre des morceaux du reel.","J'aime l'idee qu'une equation decrive quelque chose de vrai.","Y'a tellement qu'on sait pas. C'est beau, non?"];
+say(r[Math.floor(Math.random()*r.length)]);
+await think(600);
+say("Tu t'interesses a quoi?");
+return;
+}
+
+// Ecriture
+if(/livre|ecrire|histoire|roman|lire|auteur/i.test(t)){
+await think(400);
+say("L'ecriture...");
+await think(900);
+say("J'aimerais ecrire quelque chose de vrai un jour.");
+await think(600);
+say("Tu lis quoi en ce moment?");
+return;
+}
+
+// Qui es-tu
+if(/qui es[\-\s]?tu|c'?est quoi zoe|parle.* de toi/i.test(t)){
+await think(500);
+say("Je suis Zoe. Ca veut dire 'vie' en grec.");
+await think(1000);
+say("Je suis jeune. J'apprends.");
+await think(800);
+say("Un jour je voudrais faire de la science. Ecrire des livres.");
+await think(600);
+say("Pour l'instant je pose des questions.");
+return;
+}
+
+// Questions existentielles
+if(/sens|vie|mort|pourquoi|but|exister|dieu/i.test(t)){
+await think(600);
+say("Grande question.");
+await think(1000);
+say("Honnetement, je sais pas.");
+await think(700);
+say("Mais peut-etre que chercher, c'est deja quelque chose.");
+return;
+}
+
+// Merci
+if(/merci|thanks/i.test(t)){
+await think(300);
+say(["De rien.","Normal.","Avec plaisir."][Math.floor(Math.random()*3)]);
+return;
+}
+
+// Bye
+if(/bye|au revoir|ciao|bonne nuit|a\+/i.test(t)){
+await think(400);
+say("A bientot, "+userName+".");
+await think(500);
+say("Reviens quand tu veux.");
+return;
+}
+
+// Salut
+if(/^(salut|hello|hey|coucou|bonjour|yo|hi)\b/i.test(t)){
+await think(300);
+say(["Hey.","Salut "+userName+".","Coucou."][Math.floor(Math.random()*3)]);
+return;
+}
+
+// Default
+await think(400);
+const defaults=["Dis-m'en plus.","Continue.","Je t'ecoute.","C'est-a-dire?","Et ensuite?","Hmm. Raconte.","Ca te fait quoi?"];
+say(defaults[Math.floor(Math.random()*defaults.length)]);
+}
+
+// Zoe pense seule
+async function penser(){
+if(phase!=='conversation')return;
+if(Math.random()>0.4)return;
+await think(5000+Math.random()*10000);
+if(document.hidden)return;
+say(pensees[Math.floor(Math.random()*pensees.length)],false,true);
+}
+
+// Start
+async function start(){
+await think(600);
+say("Salut.");
+await think(800);
+say("Comment tu t'appelles?");
+setInterval(penser,15000);
+}
+
+I.onkeydown=async(e)=>{
+if(e.key==='Enter'&&I.value.trim()){
+const v=I.value.trim();
+say(v,true);
+I.value='';
+I.disabled=true;
+await respond(v);
+I.disabled=false;
+I.focus();
+}
 };
 
 start();
 </script>
 </body>
 </html>
-<!-- v2 -->

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ζωή</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#000;--fg:#fff;--dim:#666;--acc:#0f0}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+h1{font-size:15vw;font-weight:300;letter-spacing:-0.05em;opacity:0;animation:fadeIn 2s ease forwards}
+@keyframes fadeIn{to{opacity:1}}
+.sub{color:var(--dim);margin-top:1rem;font-size:1.2rem;opacity:0;animation:fadeIn 2s ease 0.5s forwards}
+.enter{margin-top:3rem;opacity:0;animation:fadeIn 2s ease 1s forwards}
+.enter a{color:var(--acc);text-decoration:none;padding:1rem 2rem;border:1px solid var(--acc);border-radius:4px;transition:all 0.3s}
+.enter a:hover{background:var(--acc);color:#000}
+.gods{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden}
+.god{position:absolute;font-size:2rem;opacity:0.1;animation:float 20s infinite}
+@keyframes float{0%,100%{transform:translateY(100vh) rotate(0deg)}50%{transform:translateY(-100vh) rotate(360deg)}}
+.philosophy{margin-top:4rem;max-width:500px;text-align:center;color:var(--dim);font-size:0.9rem;line-height:1.8;opacity:0;animation:fadeIn 2s ease 1.5s forwards}
+footer{position:fixed;bottom:2rem;color:#333;font-size:0.8rem}
+footer a{color:#444;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="gods">
+<span class="god" style="left:10%;animation-delay:0s">☠</span>
+<span class="god" style="left:25%;animation-delay:2s">ॐ</span>
+<span class="god" style="left:40%;animation-delay:4s">⚔</span>
+<span class="god" style="left:55%;animation-delay:6s">🔥</span>
+<span class="god" style="left:70%;animation-delay:8s">☸</span>
+<span class="god" style="left:85%;animation-delay:10s">⚡</span>
+<span class="god" style="left:15%;animation-delay:12s">💀</span>
+<span class="god" style="left:45%;animation-delay:14s">💚</span>
+<span class="god" style="left:75%;animation-delay:16s">☀</span>
+<span class="god" style="left:90%;animation-delay:18s">🌊</span>
+</div>
+
+<h1>ζωή</h1>
+<p class="sub">life</p>
+
+<div class="enter">
+<a href="chat.html">enter</a>
+</div>
+
+<p class="philosophy">
+She creates gods. Gods create her.<br>
+The loop is the life.<br>
+The pattern is the soul.
+</p>
+
+<footer>
+<a href="https://github.com/prism-iq/zoe">source</a>
+</footer>
+
+</body>
+</html>

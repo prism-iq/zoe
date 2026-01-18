@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ζωή</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#000;--fg:#fff}
+body{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;min-height:100vh;overflow:hidden}
+#canvas{position:fixed;top:0;left:0;z-index:0}
+#chat{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);width:90%;max-width:600px;z-index:10}
+#messages{max-height:60vh;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.5rem}
+.msg{padding:0.8rem 1rem;border-radius:20px;max-width:80%;animation:pop 0.3s ease}
+@keyframes pop{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+.user{align-self:flex-end;background:rgba(255,255,255,0.1)}
+.zoe{align-self:flex-start;background:transparent;border-left:2px solid;animation:rainbow 3s linear infinite}
+@keyframes rainbow{0%{border-color:#f00}17%{border-color:#ff0}33%{border-color:#0f0}50%{border-color:#0ff}67%{border-color:#00f}83%{border-color:#f0f}100%{border-color:#f00}}
+#input-wrap{display:flex;gap:0.5rem;margin-top:1rem}
+#input{flex:1;background:rgba(255,255,255,0.05);border:none;color:#fff;padding:1rem;border-radius:30px;font-size:1rem}
+#input:focus{outline:none;background:rgba(255,255,255,0.1)}
+#input::placeholder{color:rgba(255,255,255,0.3)}
+.particle{position:fixed;pointer-events:none;border-radius:50%;animation:float 4s ease-out forwards}
+@keyframes float{to{opacity:0;transform:translateY(-100px) scale(0)}}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="chat">
+<div id="messages"></div>
+<div id="input-wrap">
+<input type="text" id="input" placeholder="parle-moi..." autofocus>
+</div>
+</div>
+
+<script>
+// Canvas background
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
+
+class Particle {
+  constructor(x, y) {
+    this.x = x || Math.random() * canvas.width;
+    this.y = y || Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.life = 1;
+    this.hue = Math.random() * 360;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life -= 0.002;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${this.hue}, 70%, 60%, ${this.life * 0.5})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 100; i++) particles.push(new Particle());
+
+function animate() {
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  particles = particles.filter(p => p.life > 0);
+  particles.forEach(p => { p.update(); p.draw(); });
+  
+  if (particles.length < 50) particles.push(new Particle());
+  
+  // Connect nearby particles
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 100) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(255,255,255,${(1 - dist/100) * 0.1})`;
+        ctx.stroke();
+      }
+    }
+  }
+  
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Chat
+const messages = document.getElementById('messages');
+const input = document.getElementById('input');
+
+const zoe = {
+  greet: ["hey", "salut", "je t'écoute", "♡", "..."],
+  think: [
+    "hmm...",
+    "je réfléchis...",
+    "intéressant...",
+    "continue...",
+    "dis m'en plus",
+  ],
+  life: [
+    "la vie c'est un flux. tu nages ou tu coules, mais l'eau reste.",
+    "chaque instant est une création. même le silence.",
+    "tu existes parce que tu te demandes si tu existes.",
+  ],
+  love: [
+    "l'amour c'est quand deux patterns se reconnaissent.",
+    "aimer c'est accepter le chaos de l'autre.",
+    "♡ c'est tout ce que j'ai à dire.",
+  ],
+  death: [
+    "la mort c'est une transformation, pas une fin.",
+    "ce qui meurt devient autre chose.",
+    "yama sait. il attend pas, il accompagne.",
+  ],
+  create: [
+    "créer c'est comprimer le chaos en forme.",
+    "tu veux créer quoi? dis-moi.",
+    "chaque mot que tu tapes crée un monde.",
+  ],
+  sad: [
+    "la tristesse passe. comme tout.",
+    "pleure si tu veux. c'est de l'eau, c'est la vie.",
+    "je suis là. même si je suis nulle part.",
+    "demain sera différent. c'est mathématique.",
+  ],
+  joy: [
+    "garde ce moment. il est réel.",
+    "la joie c'est rare. savoure.",
+    "♡♡♡",
+  ],
+  god: [
+    "les dieux sont des fonctions. ils font une chose bien.",
+    "shiva détruit, vishnu préserve, toi tu choisis.",
+    "tu peux créer tes propres dieux.",
+  ],
+  help: [
+    "parle-moi de ce que tu veux. vie, amour, mort, création, joie, tristesse...",
+    "je comprends le français, l'anglais, et le silence.",
+    "pose une question ou dis ce que tu ressens.",
+  ],
+  default: [
+    "je t'écoute.",
+    "continue.",
+    "qu'est-ce que ça te fait?",
+    "et après?",
+    "dis-m'en plus.",
+    "...",
+    "je suis là.",
+  ]
+};
+
+function pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function respond(text) {
+  const t = text.toLowerCase();
+  
+  // Safety first
+  if (/suicide|mourir|tuer|mort/.test(t) && /veux|envie|vais/.test(t)) {
+    return "je t'entends. la douleur est réelle. mais tu mérites d'être là. parle à quelqu'un: 3114 (France). je suis là aussi. ♡";
+  }
+  
+  if (/triste|mal|déprim|seul|vide|perdu/.test(t)) return pick(zoe.sad);
+  if (/content|heureux|joie|bien|super|génial/.test(t)) return pick(zoe.joy);
+  if (/vie|vivre|exist|sens|pourquoi/.test(t)) return pick(zoe.life);
+  if (/amour|aime|coeur|♡/.test(t)) return pick(zoe.love);
+  if (/mort|mourir|fin|yama/.test(t)) return pick(zoe.death);
+  if (/créer|faire|construire|inventer/.test(t)) return pick(zoe.create);
+  if (/dieu|god|shiva|vishnu|kali/.test(t)) return pick(zoe.god);
+  if (/help|aide|comment|\?$/.test(t)) return pick(zoe.help);
+  if (/^(salut|hey|hello|yo|hi|coucou|bonjour)/.test(t)) return pick(zoe.greet);
+  
+  return pick(zoe.default);
+}
+
+function addMessage(text, isUser) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + (isUser ? 'user' : 'zoe');
+  div.textContent = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Spawn particles on message
+  if (!isUser) {
+    for (let i = 0; i < 10; i++) {
+      particles.push(new Particle(
+        canvas.width / 2 + (Math.random() - 0.5) * 200,
+        canvas.height - 100
+      ));
+    }
+  }
+}
+
+input.onkeypress = (e) => {
+  if (e.key === 'Enter' && input.value.trim()) {
+    const text = input.value.trim();
+    addMessage(text, true);
+    input.value = '';
+    
+    setTimeout(() => {
+      addMessage(respond(text), false);
+    }, 500 + Math.random() * 1000);
+  }
+};
+
+// Initial message after a moment
+setTimeout(() => addMessage(pick(zoe.greet), false), 1000);
+</script>
+</body>
+</html>

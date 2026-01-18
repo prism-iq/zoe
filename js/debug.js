@@ -48,6 +48,9 @@ export function initDebug() {
         // Trigger mentor
         mentor: (key) => mind.triggerMentor(key),
 
+        // Check for book insights
+        books: () => mind.checkBooks(),
+
         // API status
         status: () => api.getStatus(),
 

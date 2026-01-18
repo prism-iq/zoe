@@ -1,13 +1,14 @@
-// mind.js - Autonomous thinking loop (pensees, mentors)
+// mind.js - Autonomous thinking loop (pensees, mentors, book insights)
 // ES Module
 
 import state from './state.js';
 import { pensees, mentors, mentorKeys } from './data.js';
 import { say, mentorSay, think } from './ui.js';
 import { shouldSpeak, shouldMentorSpeak, organicDelay } from './wave.js';
+import errors from './errors.js';
 
 let running = false;
-let loopTimeout = null;
+let lastInsightTime = 0;
 
 // Get random item from array
 function random(arr) {
@@ -41,6 +42,48 @@ async function mentorParle() {
     mentorSay(mentor.nom, parole, mentor.cssClass);
 }
 
+// Fetch insights from zoe-reader via JSON file
+async function checkBookInsights() {
+    if (state.phase !== 'conversation') return;
+
+    try {
+        const res = await fetch('/insights.json?t=' + Date.now());
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        if (data.pending && data.history?.[0]?.time) {
+            const insightTime = new Date(data.history[0].time).getTime();
+
+            // Only show if it's a new insight
+            if (insightTime > lastInsightTime) {
+                lastInsightTime = insightTime;
+
+                await think(1000);
+                say("Je viens de lire quelque chose d'interessant...", false, true);
+                await think(2000);
+                say(data.pending, false, true);
+
+                // Clear the pending insight on server
+                clearPendingInsight();
+            }
+        }
+    } catch (e) {
+        // Silent fail - reader might not be running
+    }
+}
+
+// Clear the pending insight after displaying
+async function clearPendingInsight() {
+    try {
+        // We can't write to the file from browser, but we can track locally
+        // The reader will overwrite with new insights anyway
+        localStorage.setItem('zoe_last_insight', lastInsightTime.toString());
+    } catch (e) {
+        // Ignore
+    }
+}
+
 // Main autonomous loop
 async function boucleVie() {
     while (running) {
@@ -49,8 +92,10 @@ async function boucleVie() {
 
         state.incrementIdle();
 
-        // Check for book insights
-        checkKnowledgeUpdates();
+        // Check for book insights every ~30 seconds
+        if (state.activity.idle % 10 === 0) {
+            checkBookInsights();
+        }
 
         // Think after being idle for a bit
         if (state.activity.idle > 3) {
@@ -64,32 +109,21 @@ async function boucleVie() {
     }
 }
 
-// Check for knowledge updates from book reader
-function checkKnowledgeUpdates() {
-    const insight = localStorage.getItem('zoe_insight');
-    if (insight) {
-        localStorage.removeItem('zoe_insight');
-        say("Je viens de lire quelque chose...", false, true);
-        setTimeout(() => {
-            say(insight, false, true);
-        }, 1500);
-    }
-}
-
 // Start the mind loop
 export function start() {
     if (running) return;
     running = true;
+
+    // Load last insight time from localStorage
+    const saved = localStorage.getItem('zoe_last_insight');
+    if (saved) lastInsightTime = parseInt(saved, 10);
+
     boucleVie();
 }
 
 // Stop the mind loop
 export function stop() {
     running = false;
-    if (loopTimeout) {
-        clearTimeout(loopTimeout);
-        loopTimeout = null;
-    }
 }
 
 // Manually trigger a thought
@@ -110,9 +144,15 @@ export function triggerMentor(mentorKey = null) {
     mentorSay(mentor.nom, parole, mentor.cssClass);
 }
 
+// Manually check for book insights
+export function checkBooks() {
+    checkBookInsights();
+}
+
 export default {
     start,
     stop,
     triggerThought,
-    triggerMentor
+    triggerMentor,
+    checkBooks
 };

@@ -355,6 +355,14 @@ say(["Hey.","Salut "+userName+".","Coucou."][Math.floor(Math.random()*3)]);
 return;
 }
 
+// Essayer Claude si disponible
+const claudeResponse = await askClaude(input);
+if(claudeResponse) {
+    await think(300);
+    say(claudeResponse);
+    return;
+}
+
 // Default
 await think(400);
 const defaults=["Dis-m'en plus.","Continue.","Je t'ecoute.","C'est-a-dire?","Et ensuite?","Hmm. Raconte.","Ca te fait quoi?"];

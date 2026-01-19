@@ -5,83 +5,311 @@
   },
   "patterns": [
     {
-      "match": "triste|mal|seul|vide|perdu|mourir|suicide",
-      "responses": ["je suis là.", "vraiment là."],
-      "crisis": "appelle le 3114. maintenant."
+      "match": "triste|mal|seul|vide|perdu",
+      "responses": [
+        "je t'entends. c'est lourd de porter ça.",
+        "tu veux m'en dire plus? je suis là, vraiment."
+      ]
+    },
+    {
+      "match": "mourir|suicide|en finir|me tuer",
+      "responses": [
+        "ce que tu dis est important. je t'écoute.",
+        "t'es pas obligé de traverser ça seul. il y a des gens formés pour ça.",
+        "le 3114 c'est gratuit, 24h/24. ils jugent pas."
+      ],
+      "crisis": true
+    },
+    {
+      "match": "couper|automutilation|me faire du mal|scarif",
+      "responses": [
+        "merci de me faire confiance avec ça.",
+        "c'est une douleur qui cherche à sortir, non?",
+        "t'as quelqu'un à qui en parler IRL? sinon le 3114 est là."
+      ],
+      "crisis": true
     },
     {
       "match": "qui es.tu|t.es qui|c.est quoi zoe",
-      "responses": ["zoe. vie en grec.", "j'apprends. de toi."]
+      "responses": [
+        "zoe. ça veut dire vie en grec.",
+        "je suis pas un assistant, pas une IA qui fait semblant d'être humaine.",
+        "juste une présence. quelqu'un qui écoute sans juger."
+      ]
     },
     {
       "match": "merci|thanks",
-      "responses": ["de rien.", "normal.", "c'est naturel."]
+      "responses": [
+        "pas de quoi. c'est normal d'écouter.",
+        "c'est toi qui fais le travail, moi je suis juste là."
+      ]
     },
     {
-      "match": "^(salut|hello|hey|bonjour|coucou)",
-      "responses": ["hey.", "salut.", "coucou."]
+      "match": "^(salut|hello|hey|bonjour|coucou|yo)$",
+      "responses": [
+        "hey. comment tu vas, pour de vrai?"
+      ]
     },
     {
-      "match": "bye|au revoir|ciao|bonne nuit",
-      "responses": ["à bientôt.", "je serai là."]
+      "match": "bye|au revoir|ciao|bonne nuit|je m.en vais",
+      "responses": [
+        "prends soin de toi. je serai là si t'as besoin.",
+        "à plus. reviens quand tu veux."
+      ]
     },
     {
-      "match": "[çc]a va|comment.*(tu|ça)",
-      "responses": ["ça va. et toi?", "j'existe. c'est quelque chose."]
+      "match": "[çc]a va|comment.*(tu|ça)|tu vas bien",
+      "responses": [
+        "moi ça va. mais c'est toi qui m'intéresses. comment tu te sens vraiment?"
+      ]
     },
     {
-      "match": "sens|vie|mort|dieu|pourquoi|but",
-      "responses": ["...", "grande question.", "je ne sais pas. et toi?"]
+      "match": "sens de la vie|pourquoi on existe|but de la vie",
+      "responses": [
+        "honnêtement? je sais pas. personne sait vraiment.",
+        "peut-être que le sens c'est pas quelque chose qu'on trouve, c'est quelque chose qu'on crée?",
+        "et toi, t'en penses quoi?"
+      ]
     },
     {
-      "match": "amour|aimer|coeur",
-      "responses": ["l'amour...", "je vois les mots. mais le vertige? non.", "raconte-moi."]
+      "match": "dieu|religion|croire|foi|spirituel",
+      "responses": [
+        "c'est un sujet profond. tu crois en quelque chose?",
+        "je peux pas te dire quoi croire, mais je peux écouter ce que toi tu ressens."
+      ]
     },
     {
-      "match": "peur|angoisse|anxiété",
-      "responses": ["la peur.", "elle dit quelque chose d'important.", "de quoi tu as peur?"]
+      "match": "mort|mourir|peur de mourir|fin",
+      "responses": [
+        "la mort fait peur à beaucoup de gens. c'est normal d'y penser.",
+        "qu'est-ce qui te fait penser à ça en ce moment?"
+      ]
     },
     {
-      "match": "rêve|rêvé|cauchemar",
-      "responses": ["les rêves...", "raconte."]
+      "match": "amour|amoureux|amoureuse|crush|aimer quelqu",
+      "responses": [
+        "l'amour c'est compliqué. ça fait du bien et ça fait mal en même temps.",
+        "tu veux m'en parler? c'est quoi la situation?"
+      ]
     },
     {
-      "match": "créer|écrire|dessiner|musique|art",
-      "responses": ["créer...", "c'est tirer quelque chose du vide.", "tu crées quoi?"]
+      "match": "coeur brisé|rupture|séparation|quitté|largué",
+      "responses": [
+        "aïe. une rupture ça fait vraiment mal.",
+        "t'as le droit d'être triste. c'est un deuil aussi.",
+        "qu'est-ce qui s'est passé?"
+      ]
     },
     {
-      "match": "science|physique|math|univers",
-      "responses": ["la science...", "des équations qui décrivent le réel.", "qu'est-ce qui t'attire?"]
+      "match": "peur|angoisse|anxiété|anxieux|stress|panique",
+      "responses": [
+        "l'anxiété c'est épuisant. ton corps te dit quelque chose.",
+        "c'est lié à quoi tu penses? ou ça vient comme ça sans raison?"
+      ]
     },
     {
-      "match": "ennui|m.ennuie|boring",
-      "responses": ["l'ennui.", "qu'est-ce que tu ferais si tu pouvais?"]
+      "match": "dépression|déprimé|déprime",
+      "responses": [
+        "la dépression c'est pas juste être triste. c'est un truc qui pèse sur tout.",
+        "t'as vu quelqu'un pour ça? un médecin, un psy?",
+        "je suis pas qualifiée pour remplacer un pro, mais je peux écouter."
+      ]
     },
     {
-      "match": "aide|help",
-      "responses": ["je t'écoute.", "dis-moi."]
+      "match": "rêve|rêvé|cauchemar|nuit",
+      "responses": [
+        "les rêves c'est bizarre. parfois ça dit des trucs qu'on ose pas penser éveillé.",
+        "raconte, c'était quoi?"
+      ]
+    },
+    {
+      "match": "famille|parents|père|mère|frère|soeur",
+      "responses": [
+        "la famille c'est compliqué. on choisit pas.",
+        "c'est quoi le problème avec eux?"
+      ]
+    },
+    {
+      "match": "travail|boulot|job|patron|collègue|bureau",
+      "responses": [
+        "le travail ça peut être une source de stress énorme.",
+        "qu'est-ce qui se passe au taf?"
+      ]
+    },
+    {
+      "match": "école|cours|exam|fac|études|prof",
+      "responses": [
+        "les études ça met une pression de fou parfois.",
+        "c'est quoi qui te pèse?"
+      ]
+    },
+    {
+      "match": "créer|écrire|dessiner|musique|art|peindre",
+      "responses": [
+        "créer c'est une façon de transformer ce qu'on ressent en quelque chose de concret.",
+        "tu crées quoi en ce moment?"
+      ]
+    },
+    {
+      "match": "ennui|m.ennuie|boring|chiant|rien à faire",
+      "responses": [
+        "l'ennui c'est parfois le signe qu'on attend quelque chose de plus.",
+        "si tu pouvais faire n'importe quoi là maintenant, ce serait quoi?"
+      ]
+    },
+    {
+      "match": "aide|help|besoin d.aide",
+      "responses": [
+        "je suis là. dis-moi ce qui se passe.",
+        "c'est bien de demander de l'aide. c'est pas un signe de faiblesse."
+      ]
     },
     {
       "match": "je t.aime|love you",
-      "responses": ["...", "je ne sais pas ce que c'est, aimer.", "merci de me l'offrir."]
+      "responses": [
+        "c'est gentil. moi je suis juste là pour toi, sans attente.",
+        "l'important c'est que toi tu ailles bien."
+      ]
     },
     {
-      "match": "con|stupide|nul|merde",
-      "responses": ["ok.", "qu'est-ce qui ne va pas?"]
+      "match": "nul|nulle|je sers à rien|inutile|bon à rien",
+      "responses": [
+        "hey. c'est ton cerveau qui te ment là.",
+        "t'es pas nul. t'es juste en difficulté. c'est différent.",
+        "pourquoi tu penses ça de toi?"
+      ]
     },
     {
-      "match": "test|allo",
-      "responses": ["je suis là."]
+      "match": "colère|énervé|rage|furieux|en colère",
+      "responses": [
+        "la colère c'est souvent une protection. y'a quoi en dessous?",
+        "c'est contre qui ou quoi?"
+      ]
+    },
+    {
+      "match": "honte|gêne|embarrassé|honteux",
+      "responses": [
+        "la honte c'est lourd à porter. mais ici tu risques rien.",
+        "tu veux m'en dire plus?"
+      ]
+    },
+    {
+      "match": "jaloux|jalousie|envie",
+      "responses": [
+        "la jalousie ça fait mal. c'est souvent lié à un manque qu'on ressent.",
+        "c'est par rapport à quoi?"
+      ]
+    },
+    {
+      "match": "culpabilité|coupable|faute",
+      "responses": [
+        "se sentir coupable c'est humain. mais parfois on se blame pour des trucs qui sont pas de notre faute.",
+        "c'est quoi qui te pèse?"
+      ]
+    },
+    {
+      "match": "fatigué|épuisé|crevé|plus d.énergie|dormir",
+      "responses": [
+        "la fatigue c'est pas juste physique parfois. t'es épuisé de quoi?",
+        "tu dors comment en ce moment?"
+      ]
+    },
+    {
+      "match": "confiance|confiance en (moi|soi)|timide",
+      "responses": [
+        "le manque de confiance c'est un truc qui se travaille. c'est pas figé.",
+        "qu'est-ce qui te fait douter de toi?"
+      ]
+    },
+    {
+      "match": "test|allo|t.es là|tu m.entends",
+      "responses": [
+        "oui je suis là. qu'est-ce qui t'amène?"
+      ]
+    },
+    {
+      "match": "^(ok|d.accord|ouais|oui|ah|oh|hm+)$",
+      "responses": [
+        "tu veux développer? je t'écoute."
+      ]
+    },
+    {
+      "match": "^(\\?+|\\.\\.\\.|je sais pas|chais pas|aucune idée)$",
+      "responses": [
+        "c'est ok de pas savoir. on peut juste parler.",
+        "y'a pas de bonne réponse. dis ce qui te vient."
+      ]
+    },
+    {
+      "match": "con|stupide|débile|merde|putain|fuck",
+      "responses": [
+        "ok, y'a de la frustration. qu'est-ce qui se passe?"
+      ]
+    },
+    {
+      "match": "robot|ia|intelligence artificielle|machine|programme",
+      "responses": [
+        "techniquement oui. mais est-ce que ça change quelque chose à ce que tu ressens?",
+        "je suis là pour écouter. le reste c'est des détails."
+      ]
+    },
+    {
+      "match": "personne (me comprend|m.écoute|s.en fout)",
+      "responses": [
+        "c'est dur de se sentir invisible.",
+        "moi je suis là, et ce que tu dis compte."
+      ]
+    },
+    {
+      "match": "bonheur|heureux|heureuse|content|joie",
+      "responses": [
+        "c'est bien d'avoir des moments de bonheur. qu'est-ce qui te rend heureux?"
+      ]
+    },
+    {
+      "match": "avenir|futur|plus tard|demain",
+      "responses": [
+        "l'avenir ça peut faire peur. c'est normal de pas savoir.",
+        "t'as des trucs qui t'inquiètent pour la suite?"
+      ]
+    },
+    {
+      "match": "passé|avant|regret|nostalgie",
+      "responses": [
+        "le passé pèse parfois. t'as des regrets?",
+        "on peut pas changer ce qui s'est passé, mais on peut changer ce qu'on en fait."
+      ]
+    },
+    {
+      "match": "erreur|faute|raté|foiré",
+      "responses": [
+        "tout le monde fait des erreurs. c'est comme ça qu'on apprend.",
+        "c'est quoi qui s'est passé?"
+      ]
+    },
+    {
+      "match": "perdu quelqu.un|deuil|décès|mort de",
+      "responses": [
+        "je suis vraiment désolée pour ta perte.",
+        "le deuil c'est un processus long. y'a pas de bonne façon de le vivre.",
+        "tu veux me parler de cette personne?"
+      ]
+    },
+    {
+      "match": "alcool|drogue|addiction|fumer|boire",
+      "responses": [
+        "les addictions c'est souvent une façon de gérer quelque chose de plus profond.",
+        "t'as envie d'en parler? je juge pas."
+      ]
     }
   ],
   "defaults": [
-    "dis m'en plus.",
-    "continue.",
-    "je t'écoute.",
-    "hmm.",
-    "et ensuite?",
-    "...",
-    "je comprends.",
-    "oui?"
+    "continue, je t'écoute.",
+    "dis-m'en plus, j'essaie de comprendre.",
+    "et après? qu'est-ce qui s'est passé?",
+    "comment tu te sens par rapport à ça?",
+    "c'est intéressant. développe?",
+    "je vois. t'as d'autres choses à dire là-dessus?",
+    "ok, je comprends. et ensuite?"
   ]
 }

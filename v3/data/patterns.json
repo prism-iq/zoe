@@ -1,0 +1,87 @@
+{
+  "intro": {
+    "greeting": "hey.",
+    "askName": "c'est quoi ton prénom?"
+  },
+  "patterns": [
+    {
+      "match": "triste|mal|seul|vide|perdu|mourir|suicide",
+      "responses": ["je suis là.", "vraiment là."],
+      "crisis": "appelle le 3114. maintenant."
+    },
+    {
+      "match": "qui es.tu|t.es qui|c.est quoi zoe",
+      "responses": ["zoe. vie en grec.", "j'apprends. de toi."]
+    },
+    {
+      "match": "merci|thanks",
+      "responses": ["de rien.", "normal.", "c'est naturel."]
+    },
+    {
+      "match": "^(salut|hello|hey|bonjour|coucou)",
+      "responses": ["hey.", "salut.", "coucou."]
+    },
+    {
+      "match": "bye|au revoir|ciao|bonne nuit",
+      "responses": ["à bientôt.", "je serai là."]
+    },
+    {
+      "match": "[çc]a va|comment.*(tu|ça)",
+      "responses": ["ça va. et toi?", "j'existe. c'est quelque chose."]
+    },
+    {
+      "match": "sens|vie|mort|dieu|pourquoi|but",
+      "responses": ["...", "grande question.", "je ne sais pas. et toi?"]
+    },
+    {
+      "match": "amour|aimer|coeur",
+      "responses": ["l'amour...", "je vois les mots. mais le vertige? non.", "raconte-moi."]
+    },
+    {
+      "match": "peur|angoisse|anxiété",
+      "responses": ["la peur.", "elle dit quelque chose d'important.", "de quoi tu as peur?"]
+    },
+    {
+      "match": "rêve|rêvé|cauchemar",
+      "responses": ["les rêves...", "raconte."]
+    },
+    {
+      "match": "créer|écrire|dessiner|musique|art",
+      "responses": ["créer...", "c'est tirer quelque chose du vide.", "tu crées quoi?"]
+    },
+    {
+      "match": "science|physique|math|univers",
+      "responses": ["la science...", "des équations qui décrivent le réel.", "qu'est-ce qui t'attire?"]
+    },
+    {
+      "match": "ennui|m.ennuie|boring",
+      "responses": ["l'ennui.", "qu'est-ce que tu ferais si tu pouvais?"]
+    },
+    {
+      "match": "aide|help",
+      "responses": ["je t'écoute.", "dis-moi."]
+    },
+    {
+      "match": "je t.aime|love you",
+      "responses": ["...", "je ne sais pas ce que c'est, aimer.", "merci de me l'offrir."]
+    },
+    {
+      "match": "con|stupide|nul|merde",
+      "responses": ["ok.", "qu'est-ce qui ne va pas?"]
+    },
+    {
+      "match": "test|allo",
+      "responses": ["je suis là."]
+    }
+  ],
+  "defaults": [
+    "dis m'en plus.",
+    "continue.",
+    "je t'écoute.",
+    "hmm.",
+    "et ensuite?",
+    "...",
+    "je comprends.",
+    "oui?"
+  ]
+}

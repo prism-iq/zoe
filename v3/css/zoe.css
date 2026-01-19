@@ -1,0 +1,116 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #0a0a0a;
+    --fg: #e0e0e0;
+    --zoe: #a0c4ff;
+    --user: #ffd6a5;
+    --dim: #444;
+}
+
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.5 system-ui, sans-serif;
+    height: 100vh;
+}
+
+#zoe {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    border-bottom: 1px solid var(--dim);
+}
+
+.symbol { color: var(--zoe); font-size: 1.2em; }
+.name { font-weight: 300; letter-spacing: 2px; }
+
+#key {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+#key:hover { opacity: 1; }
+#key.active { opacity: 1; color: var(--zoe); }
+
+#chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    line-height: 1.4;
+}
+
+.msg.zoe {
+    align-self: flex-start;
+    background: rgba(160, 196, 255, 0.1);
+    border: 1px solid rgba(160, 196, 255, 0.2);
+}
+
+.msg.user {
+    align-self: flex-end;
+    background: rgba(255, 214, 165, 0.1);
+    border: 1px solid rgba(255, 214, 165, 0.2);
+}
+
+.msg.typing {
+    color: var(--dim);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+footer {
+    padding: 16px;
+    border-top: 1px solid var(--dim);
+}
+
+#input {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--dim);
+    border-radius: 24px;
+    padding: 12px 20px;
+    color: var(--fg);
+    font: inherit;
+    outline: none;
+}
+
+#input:focus { border-color: var(--zoe); }
+#input:disabled { opacity: 0.5; }
+
+#safety {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--dim);
+}
+
+#safety a {
+    color: #e74c3c;
+    text-decoration: none;
+}

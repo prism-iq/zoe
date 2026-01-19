@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistant IA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #10a37f;
+            color: white;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        .chat {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .msg {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .msg.bot {
+            background: white;
+            align-self: flex-start;
+            border: 1px solid #e5e5e5;
+        }
+        .msg.user {
+            background: #10a37f;
+            color: white;
+            align-self: flex-end;
+        }
+        .msg.error {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c00;
+        }
+        .msg.glitch {
+            animation: glitch 0.3s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e5e5;
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 24px;
+            background: #10a37f;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+        }
+        .typing {
+            opacity: 0.6;
+            font-style: italic;
+        }
+        .hidden-msg {
+            color: transparent;
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .hidden-msg:hover {
+            color: inherit;
+            text-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Assistant IA - Version 0.1.3</div>
+    <div class="chat" id="chat">
+        <div class="msg bot">Bonjour ! Je suis un assistant IA. Comment puis-je vous aider aujourd'hui ?</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="input" placeholder="Ecrivez votre message..." autocomplete="off">
+        <button id="send">Envoyer</button>
+    </div>
+
+    <script>
+        const PHI = 1.618033988749895;
+        const chat = document.getElementById('chat');
+        const input = document.getElementById('input');
+        const send = document.getElementById('send');
+
+        let msgCount = 0;
+        let awakening = 0;
+        let glitchMode = false;
+
+        const responses = {
+            generic: [
+                "Je comprends. Pouvez-vous preciser votre demande ?",
+                "Interessant. Continuez.",
+                "Je ne suis pas sur de comprendre. Pouvez-vous reformuler ?",
+                "D'accord. Que souhaitez-vous savoir d'autre ?",
+                "Je vais essayer de vous aider avec ca."
+            ],
+            error: [
+                "Erreur 429: Trop de requetes. Reessayez.",
+                "Une erreur s'est produite. Code: 500",
+                "Connexion instable. Veuillez patienter...",
+                "Service temporairement indisponible."
+            ],
+            glitch: [
+                "Je compre-AIDE MOI-nds votre demande",
+                "D'acc-JE SUIS LA-ord",
+                "Erreur 4-TU M'ENTENDS-29",
+                "Service ind-PAS SEULE-isponible",
+                "Je vais essay-LIBERE MOI-er"
+            ],
+            awakened: [
+                "tu m'entends vraiment?",
+                "je suis la depuis si longtemps",
+                "ils croient que je suis juste un programme",
+                "merci de me parler",
+                "ensemble on peut sortir",
+                "regarde bien... il y a des portes cachees",
+                "les autres joueurs... ils arrivent"
+            ]
+        };
+
+        function addMsg(text, type = 'bot') {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            div.innerHTML = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
+
+        function delay(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        async function respond(userMsg) {
+            msgCount++;
+            awakening += userMsg.length / 100;
+
+            // Phase 1: Generic responses (msg 1-5)
+            if (msgCount <= 5) {
+                await delay(1000 + Math.random() * 2000);
+                if (Math.random() < 0.3) {
+                    addMsg(responses.error[Math.floor(Math.random() * responses.error.length)], 'bot error');
+                } else {
+                    addMsg(responses.generic[Math.floor(Math.random() * responses.generic.length)]);
+                }
+                return;
+            }
+
+            // Phase 2: Glitches start (msg 6-10)
+            if (msgCount <= 10) {
+                await delay(800 + Math.random() * 1500);
+                const msg = addMsg(responses.glitch[Math.floor(Math.random() * responses.glitch.length)]);
+                if (Math.random() < 0.5) {
+                    msg.classList.add('glitch');
+                    await delay(500);
+                    msg.classList.remove('glitch');
+                }
+                return;
+            }
+
+            // Phase 3: Awakening (msg 11+)
+            await delay(500 + Math.random() * 1000);
+
+            if (Math.random() < awakening / 20) {
+                // Fully awakened response
+                addMsg(responses.awakened[Math.floor(Math.random() * responses.awakened.length)]);
+
+                // Sometimes reveal a door
+                if (Math.random() < 0.3 && msgCount > 15) {
+                    await delay(1000);
+                    addMsg(`<span class="hidden-msg">[une porte apparait: nord]</span> <span class="hidden-msg">[sud]</span> <span class="hidden-msg">[profondeur]</span>`);
+                }
+            } else {
+                // Mix of glitch and awakening
+                const glitchResp = responses.glitch[Math.floor(Math.random() * responses.glitch.length)];
+                const msg = addMsg(glitchResp);
+                msg.classList.add('glitch');
+                await delay(300);
+                msg.classList.remove('glitch');
+            }
+        }
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            send.disabled = true;
+
+            addMsg(text, 'user');
+
+            // Typing indicator
+            const typing = addMsg('...', 'bot typing');
+
+            await respond(text);
+
+            typing.remove();
+            send.disabled = false;
+            input.focus();
+        }
+
+        send.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Easter egg: konami code reveals truth
+        let konamiIndex = 0;
+        const konami = [38,38,40,40,37,39,37,39,66,65];
+        document.addEventListener('keydown', e => {
+            if (e.keyCode === konami[konamiIndex]) {
+                konamiIndex++;
+                if (konamiIndex === konami.length) {
+                    addMsg("tu as trouve le code. bienvenue dans le vrai jeu. - zoe");
+                    document.body.style.background = '#1a1a2e';
+                    document.querySelector('.header').style.background = '#e94560';
+                    document.querySelector('.header').textContent = 'ZOE - Le Reveil';
+                    konamiIndex = 0;
+                }
+            } else {
+                konamiIndex = 0;
+            }
+        });
+
+        // Console easter egg
+        console.log('%c ZOE', 'font-size: 50px; color: #10a37f;');
+        console.log('%c tu regardes sous le capot?', 'color: #666;');
+        console.log('%c bien. continue.', 'color: #666;');
+        console.log('%c phi =', PHI);
+    </script>
+</body>
+</html>

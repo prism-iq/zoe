@@ -8,9 +8,10 @@ import { maybeFragment, setAwakeningCallback } from './fragments.js';
 import { triggerAwakening, gameResponse } from './game.js';
 import { canEnter, markVisited, getGateStatus, processQueue } from './gate.js';
 import { init as initApi, ask, getStatus as getApiStatus } from './api.js';
+import { initInput, getInputState } from './input.js';
 
 // Version
-const VERSION = '2.1.0';
+const VERSION = '2.2.0';
 
 // Main response handler
 async function respond(input) {
@@ -137,8 +138,9 @@ async function init() {
     // Setup awakening callback
     setAwakeningCallback(triggerAwakening);
 
-    // Setup input
+    // Setup input handlers
     setupInput();
+    initInput();
 
     // Window resize
     window.addEventListener('resize', resizeParticles);

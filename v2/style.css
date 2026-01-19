@@ -1,0 +1,215 @@
+/* ZOE v2 - Style */
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+    --bg: #050508;
+    --text: #e8e8e8;
+    --zoe: rgba(168,230,207,1);
+    --zoe-soft: rgba(168,230,207,0.6);
+    --zoe-faint: rgba(168,230,207,0.2);
+    --user-bg: rgba(255,255,255,0.05);
+    --gold: rgba(255,215,0,0.8);
+    --mystery: rgba(200,100,255,0.6);
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Canvas fond */
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+/* Titre */
+#titre {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--zoe-soft);
+    letter-spacing: 0.3em;
+    transition: all 1s;
+}
+
+#titre.evolved {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+}
+
+/* Pulse */
+#pulse {
+    position: relative;
+    z-index: 1;
+    width: 10px;
+    height: 10px;
+    background: var(--zoe);
+    border-radius: 50%;
+    margin: 0 auto 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+    transition: all 1s;
+}
+
+#pulse.alive {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 0 20px var(--zoe);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Chat */
+#chat {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* Messages */
+.msg {
+    max-width: 85%;
+    padding: 0.9rem 1.2rem;
+    border-radius: 20px;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.zoe {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid var(--zoe-faint);
+    color: var(--zoe-soft);
+}
+
+.msg.user {
+    align-self: flex-end;
+    background: var(--user-bg);
+    color: var(--text);
+}
+
+.msg.typing {
+    color: var(--zoe-faint);
+    font-style: italic;
+}
+
+.msg.fragment {
+    border-color: var(--mystery);
+    color: var(--mystery);
+    font-style: italic;
+}
+
+.msg.discovery {
+    border-color: var(--gold);
+    color: var(--gold);
+    text-align: center;
+    align-self: center;
+}
+
+/* Input */
+#input-wrap {
+    padding: 0.8rem 0 1.5rem;
+}
+
+#input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--zoe-faint);
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+#input:focus {
+    border-color: var(--zoe-soft);
+    background: rgba(255,255,255,0.05);
+}
+
+#input::placeholder { color: rgba(255,255,255,0.3); }
+#input:disabled { opacity: 0.5; }
+
+/* HUD */
+#hud {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.15);
+    text-align: right;
+    opacity: 0;
+    transition: opacity 2s;
+}
+
+#hud.visible { opacity: 1; }
+#hud .stat { margin-bottom: 0.3rem; }
+#hud .fragments { color: var(--mystery); }
+#hud .level { color: var(--gold); }
+
+/* Choix */
+#choices {
+    display: none;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#choices.visible { display: flex; }
+
+#choices button {
+    background: transparent;
+    border: 1px solid var(--zoe-faint);
+    color: var(--zoe-soft);
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#choices button:hover {
+    border-color: var(--zoe);
+    color: var(--zoe);
+}

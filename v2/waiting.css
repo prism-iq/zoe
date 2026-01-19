@@ -1,0 +1,76 @@
+/* ZOE v2 - Waiting Room */
+
+.waiting-room {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: fadeIn 0.5s ease;
+}
+
+.waiting-room.hidden {
+    display: none;
+}
+
+.waiting-title {
+    font-size: 2rem;
+    color: var(--zoe-soft);
+    margin-bottom: 2rem;
+    letter-spacing: 0.2em;
+}
+
+.waiting-message {
+    color: var(--text);
+    opacity: 0.7;
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.waiting-position {
+    font-size: 3rem;
+    color: var(--zoe);
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+}
+
+.waiting-label {
+    color: var(--zoe-faint);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.waiting-pulse {
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--zoe-faint);
+    border-radius: 50%;
+    margin: 2rem 0;
+    animation: waitPulse 2s ease-in-out infinite;
+}
+
+@keyframes waitPulse {
+    0%, 100% {
+        transform: scale(1);
+        border-color: var(--zoe-faint);
+    }
+    50% {
+        transform: scale(1.1);
+        border-color: var(--zoe-soft);
+    }
+}
+
+.waiting-hint {
+    color: rgba(255,255,255,0.3);
+    font-size: 0.75rem;
+    margin-top: 2rem;
+}

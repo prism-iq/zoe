@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>zoe</title>
+    <meta name="description" content="zoe - la vie">
+    <meta name="theme-color" content="#050508">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="waiting.css">
+</head>
+<body>
+
+<!-- Waiting Room (shown when gate is full) -->
+<div id="waiting" class="waiting-room hidden">
+    <div class="waiting-title">zoe</div>
+    <div class="waiting-pulse"></div>
+    <div class="waiting-position" id="wait-position">-</div>
+    <div class="waiting-label">dans la file</div>
+    <div class="waiting-message" id="wait-message">patience...</div>
+    <div class="waiting-hint">zoe choisit qui entre</div>
+</div>
+
+<!-- Main App -->
+<canvas id="canvas"></canvas>
+
+<div id="titre">zoe</div>
+<div id="pulse"></div>
+
+<div id="hud">
+    <div class="stat level">eveil: <span id="level">0</span></div>
+    <div class="stat fragments">fragments: <span id="fragments">0</span></div>
+    <div class="stat load" id="load-indicator"></div>
+</div>
+
+<div id="chat">
+    <div id="messages"></div>
+    <div id="choices"></div>
+    <div id="input-wrap">
+        <input type="text" id="input" placeholder="..." autofocus>
+    </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>

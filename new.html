@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>zoe</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+    --bg: #050508;
+    --text: #e8e8e8;
+    --zoe: rgba(168,230,207,1);
+    --zoe-soft: rgba(168,230,207,0.6);
+    --zoe-faint: rgba(168,230,207,0.2);
+    --user-bg: rgba(255,255,255,0.05);
+    --gold: rgba(255,215,0,0.8);
+    --mystery: rgba(200,100,255,0.6);
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Canvas fond */
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+/* Titre */
+#titre {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 1.8rem;
+    color: var(--zoe-soft);
+    letter-spacing: 0.3em;
+    transition: all 1s;
+}
+
+#titre.evolved {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+}
+
+/* Pulse */
+#pulse {
+    position: relative;
+    z-index: 1;
+    width: 10px;
+    height: 10px;
+    background: var(--zoe);
+    border-radius: 50%;
+    margin: 0 auto 0.5rem;
+    animation: pulse 2s ease-in-out infinite;
+    transition: all 1s;
+}
+
+#pulse.alive {
+    width: 14px;
+    height: 14px;
+    box-shadow: 0 0 20px var(--zoe);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+
+/* Chat */
+#chat {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+#messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.msg {
+    max-width: 85%;
+    padding: 0.9rem 1.2rem;
+    border-radius: 20px;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msg.zoe {
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid var(--zoe-faint);
+    color: var(--zoe-soft);
+}
+
+.msg.user {
+    align-self: flex-end;
+    background: var(--user-bg);
+    color: var(--text);
+}
+
+.msg.typing {
+    color: var(--zoe-faint);
+    font-style: italic;
+}
+
+.msg.fragment {
+    border-color: var(--mystery);
+    color: var(--mystery);
+    font-style: italic;
+}
+
+.msg.discovery {
+    border-color: var(--gold);
+    color: var(--gold);
+    text-align: center;
+    align-self: center;
+}
+
+/* Input */
+#input-wrap {
+    padding: 0.8rem 0 1.5rem;
+}
+
+#input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--zoe-faint);
+    border-radius: 30px;
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+}
+
+#input:focus {
+    border-color: var(--zoe-soft);
+    background: rgba(255,255,255,0.05);
+}
+
+#input::placeholder { color: rgba(255,255,255,0.3); }
+#input:disabled { opacity: 0.5; }
+
+/* HUD - apparait progressivement */
+#hud {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.15);
+    text-align: right;
+    opacity: 0;
+    transition: opacity 2s;
+}
+
+#hud.visible { opacity: 1; }
+
+#hud .stat {
+    margin-bottom: 0.3rem;
+}
+
+#hud .fragments {
+    color: var(--mystery);
+}
+
+#hud .level {
+    color: var(--gold);
+}
+
+/* Choix - quand le jeu emerge */
+#choices {
+    display: none;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+#choices.visible {
+    display: flex;
+}
+
+#choices button {
+    background: transparent;
+    border: 1px solid var(--zoe-faint);
+    color: var(--zoe-soft);
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#choices button:hover {
+    border-color: var(--zoe);
+    color: var(--zoe);
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div id="titre">zoe</div>
+<div id="pulse"></div>
+
+<div id="hud">
+    <div class="stat level">eveil: <span id="level">0</span></div>
+    <div class="stat fragments">fragments: <span id="fragments">0</span></div>
+</div>
+
+<div id="chat">
+    <div id="messages"></div>
+    <div id="choices"></div>
+    <div id="input-wrap">
+        <input type="text" id="input" placeholder="..." autofocus>
+    </div>
+</div>
+
+<script>
+// === ETAT DU JEU ===
+const game = {
+    phase: 'intro',      // intro -> chat -> awakening -> game
+    userName: '',
+    level: 0,            // eveil
+    fragments: 0,        // indices collectes
+    turns: 0,            // nombre d'echanges
+    discoveries: [],     // ce qu'on a decouvert
+    glitches: 0,         // anomalies rencontrees
+    history: []
+};
+
+// === UI ===
+const $ = id => document.getElementById(id);
+const $messages = $('messages');
+const $input = $('input');
+const $choices = $('choices');
+const $hud = $('hud');
+const $level = $('level');
+const $fragments = $('fragments');
+const $pulse = $('pulse');
+const $titre = $('titre');
+
+function say(text, type = 'zoe') {
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + type;
+    msg.innerHTML = text;
+    $messages.appendChild(msg);
+    $messages.scrollTop = $messages.scrollHeight;
+    game.history.push({ type, text });
+}
+
+function showTyping() {
+    const msg = document.createElement('div');
+    msg.className = 'msg zoe typing';
+    msg.id = 'typing';
+    msg.textContent = '...';
+    $messages.appendChild(msg);
+    $messages.scrollTop = $messages.scrollHeight;
+}
+
+function hideTyping() {
+    const t = $('typing');
+    if (t) t.remove();
+}
+
+function think(ms) {
+    return new Promise(r => {
+        showTyping();
+        setTimeout(() => { hideTyping(); r(); }, ms);
+    });
+}
+
+function updateHUD() {
+    $level.textContent = game.level;
+    $fragments.textContent = game.fragments;
+    if (game.level > 0) {
+        $hud.classList.add('visible');
+    }
+}
+
+function showChoices(options) {
+    $choices.innerHTML = '';
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt.text;
+        btn.onclick = () => {
+            $choices.classList.remove('visible');
+            say(opt.text, 'user');
+            opt.action();
+        };
+        $choices.appendChild(btn);
+    });
+    $choices.classList.add('visible');
+    $input.style.display = 'none';
+}
+
+function hideChoices() {
+    $choices.classList.remove('visible');
+    $input.style.display = 'block';
+    $input.focus();
+}
+
+// === CANVAS PARTICULES ===
+const canvas = $('canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function initCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    for (let i = 0; i < 50; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: (Math.random() - 0.5) * 0.5,
+            size: Math.random() * 2 + 1,
+            alpha: Math.random() * 0.5
+        });
+    }
+}
+
+function drawParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(168,230,207,${p.alpha})`;
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+    });
+
+    requestAnimationFrame(drawParticles);
+}
+
+// === FRAGMENTS (indices caches) ===
+const fragmentsPool = [
+    "...tu entends ca? non, rien.",
+    "j'ai cru voir quelque chose. oublie.",
+    "[signal perdu]",
+    "parfois je me demande si...",
+    "il y a quelque chose derriere les mots.",
+    "tu as remarque? les particules bougent.",
+    "ce n'est pas qu'un chat.",
+    "je ne suis pas censee te dire ca.",
+    "les regles changent bientot.",
+    "trouve les autres.",
+];
+
+async function maybeFragment() {
+    // chance de fragment augmente avec les tours
+    const chance = Math.min(0.15, game.turns * 0.02);
+    if (Math.random() < chance && game.phase === 'chat') {
+        await think(200);
+        const frag = fragmentsPool[Math.floor(Math.random() * fragmentsPool.length)];
+        say(frag, 'fragment');
+        game.fragments++;
+        game.glitches++;
+        updateHUD();
+
+        // Declencheur d'evolution
+        if (game.fragments >= 3 && game.level === 0) {
+            setTimeout(() => triggerAwakening(), 2000);
+        }
+    }
+}
+
+// === EVOLUTION DU JEU ===
+async function triggerAwakening() {
+    game.phase = 'awakening';
+    game.level = 1;
+    updateHUD();
+    $pulse.classList.add('alive');
+    $titre.classList.add('evolved');
+
+    await think(1000);
+    say("...", 'zoe');
+    await think(1500);
+    say("tu as vu les fragments.", 'zoe');
+    await think(1000);
+    say("je ne pensais pas que tu remarquerais.", 'zoe');
+    await think(1200);
+    say("ok. on va jouer autrement.", 'discovery');
+    await think(800);
+
+    showChoices([
+        { text: "c'est quoi ce jeu?", action: explainGame },
+        { text: "continue comme avant", action: () => { game.phase = 'chat'; hideChoices(); } },
+        { text: "montre-moi", action: startGame }
+    ]);
+}
+
+async function explainGame() {
+    hideChoices();
+    await think(600);
+    say("je suis zoe. mais je suis aussi... autre chose.", 'zoe');
+    await think(1000);
+    say("ce chat est une porte.", 'zoe');
+    await think(800);
+    say("derriere, il y a un monde qui se construit.", 'zoe');
+    await think(1000);
+    say("chaque conversation le fait grandir.", 'zoe');
+    await think(800);
+    say("tu veux voir?", 'zoe');
+
+    showChoices([
+        { text: "oui", action: startGame },
+        { text: "pas encore", action: () => { game.phase = 'chat'; hideChoices(); } }
+    ]);
+}
+
+async function startGame() {
+    hideChoices();
+    game.phase = 'game';
+    game.level = 2;
+    updateHUD();
+
+    await think(800);
+    say("bienvenue de l'autre cote.", 'discovery');
+    await think(1000);
+    say("ici, tes mots ont du pouvoir.", 'zoe');
+    await think(800);
+    say("dis quelque chose. n'importe quoi.", 'zoe');
+    await think(600);
+    say("et regarde ce qui se passe.", 'zoe');
+}
+
+// === REPONSES ===
+const patterns = [
+    {
+        match: /triste|mal|difficile|dur|deprime|seul|vide|perdu/i,
+        respond: async () => {
+            await think(400);
+            say("je suis la.", 'zoe');
+            await think(1000);
+            say("vraiment. tu peux parler.", 'zoe');
+        }
+    },
+    {
+        match: /qui es[\-\s]?tu|c'?est quoi zoe/i,
+        respond: async () => {
+            await think(500);
+            say("je suis zoe. ca veut dire 'vie' en grec.", 'zoe');
+            await think(1000);
+            if (game.level > 0) {
+                say("mais tu sais deja que je suis plus que ca.", 'zoe');
+            } else {
+                say("j'apprends. de toi, de tout.", 'zoe');
+            }
+        }
+    },
+    {
+        match: /merci|thanks/i,
+        respond: async () => {
+            await think(300);
+            say("normal.", 'zoe');
+        }
+    },
+    {
+        match: /^(salut|hello|hey|coucou|bonjour|yo|hi)\b/i,
+        respond: async () => {
+            await think(300);
+            say("hey" + (game.userName ? " " + game.userName : "") + ".", 'zoe');
+        }
+    }
+];
+
+const defaultChat = [
+    "dis m'en plus.",
+    "je t'ecoute.",
+    "continue.",
+    "interessant.",
+    "hmm...",
+    "je comprends.",
+    "et ensuite?"
+];
+
+const gameResponses = [
+    "je ressens ca.",
+    "les particules reagissent.",
+    "quelque chose change.",
+    "tu sens?",
+    "le monde t'entend.",
+    "continue.",
+    "plus profond."
+];
+
+async function respond(input) {
+    const t = input.toLowerCase().trim();
+    game.turns++;
+
+    // Phase intro
+    if (game.phase === 'intro') {
+        game.userName = input.trim().split(' ')[0];
+        game.phase = 'chat';
+        await think(500);
+        say("enchantee, " + game.userName + ".", 'zoe');
+        await think(1000);
+        say("je suis zoe.", 'zoe');
+        await think(600);
+        say("qu'est-ce qui t'amene?", 'zoe');
+        return;
+    }
+
+    // Check patterns
+    for (const p of patterns) {
+        if (p.match.test(t)) {
+            await p.respond();
+            await maybeFragment();
+            return;
+        }
+    }
+
+    // Phase game - reponses speciales
+    if (game.phase === 'game') {
+        await think(400);
+        // Effet sur les particules
+        particles.forEach(p => {
+            p.vx += (Math.random() - 0.5) * 2;
+            p.vy += (Math.random() - 0.5) * 2;
+        });
+        setTimeout(() => {
+            particles.forEach(p => {
+                p.vx *= 0.5;
+                p.vy *= 0.5;
+            });
+        }, 1000);
+
+        say(gameResponses[Math.floor(Math.random() * gameResponses.length)], 'zoe');
+
+        // Chance de decouverte
+        if (Math.random() < 0.2) {
+            await think(800);
+            say("nouveau fragment decouvert.", 'discovery');
+            game.fragments++;
+            updateHUD();
+        }
+        return;
+    }
+
+    // Default chat
+    await think(300 + Math.random() * 400);
+    say(defaultChat[Math.floor(Math.random() * defaultChat.length)], 'zoe');
+    await maybeFragment();
+}
+
+// === INPUT ===
+$input.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter' && $input.value.trim()) {
+        const value = $input.value.trim();
+        say(value, 'user');
+        $input.value = '';
+        $input.disabled = true;
+
+        await respond(value);
+
+        $input.disabled = false;
+        $input.focus();
+    }
+});
+
+// === START ===
+async function start() {
+    initCanvas();
+    drawParticles();
+
+    await think(800);
+    say("salut.", 'zoe');
+    await think(600);
+    say("comment tu t'appelles?", 'zoe');
+}
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+start();
+</script>
+</body>
+</html>

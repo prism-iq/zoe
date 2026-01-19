@@ -30,7 +30,7 @@
       "crisis": true
     },
     {
-      "match": "qui es.tu|t.es qui|c.est quoi zoe",
+      "match": "qui es|t.es qui|c.est quoi|tu es qui|es.tu",
       "responses": [
         "zoe. ça veut dire vie en grec.",
         "je suis pas un assistant, pas une IA qui fait semblant d'être humaine.",

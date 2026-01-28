@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>∞ EMERGENCE</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      color: #0ff;
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+    }
+    #universe { position: fixed; top: 0; left: 0; }
+    #hud {
+      position: fixed;
+      top: 20px; left: 20px;
+      z-index: 100;
+      font-size: 11px;
+      opacity: 0.8;
+      line-height: 1.6;
+    }
+    #laws {
+      position: fixed;
+      top: 20px; right: 20px;
+      z-index: 100;
+      font-size: 10px;
+      opacity: 0.6;
+      text-align: right;
+      max-width: 300px;
+    }
+    #discovery {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      text-align: center;
+      color: #ff0;
+      text-shadow: 0 0 10px #ff0;
+    }
+    #console {
+      position: fixed;
+      bottom: 20px; left: 20px;
+      font-size: 10px;
+      opacity: 0.4;
+      max-height: 100px;
+      overflow: hidden;
+    }
+    .log { margin: 2px 0; }
+    .log.emergence { color: #0f0; }
+    .log.decay { color: #f00; }
+    .log.mutation { color: #f0f; }
+  </style>
+</head>
+<body>
+  <canvas id="universe"></canvas>
+
+  <div id="hud">
+    <div>epoch: <span id="epoch">0</span></div>
+    <div>entities: <span id="entities">0</span></div>
+    <div>complexity: <span id="complexity">0.00</span></div>
+    <div>entropy: <span id="entropy">0.00</span></div>
+    <div>φ-ratio: <span id="phi">0.000</span></div>
+    <div>discoveries: <span id="discoveries">0</span></div>
+  </div>
+
+  <div id="laws"></div>
+  <div id="discovery"></div>
+  <div id="console"></div>
+
+  <script>
+// ════════════════════════════════════════════════════════════════
+// EMERGENCE - Simulation de vie artificielle auto-découvrante
+// L'univers génère ses propres lois et les découvre
+// ════════════════════════════════════════════════════════════════
+
+const PHI = 1.618033988749895;
+const canvas = document.getElementById('universe');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ═══ STATE ═══
+let epoch = 0;
+let discoveryCount = 0;
+let entities = [];
+let fields = [];
+let laws = [];
+let logs = [];
+
+// ═══ PROCEDURAL LAW GENERATION ═══
+const lawTemplates = [
+  { name: 'attraction', fn: (a, b, d) => 1 / (d * d + 1) },
+  { name: 'repulsion', fn: (a, b, d) => -1 / (d + 0.1) },
+  { name: 'orbit', fn: (a, b, d) => Math.sin(d * 0.1) / d },
+  { name: 'resonance', fn: (a, b, d) => Math.cos(a.phase - b.phase) / (d + 1) },
+  { name: 'predation', fn: (a, b, d) => a.energy > b.energy ? 0.5 / d : -0.5 / d },
+  { name: 'symbiosis', fn: (a, b, d) => (a.type === b.type ? -1 : 1) / (d + 1) },
+  { name: 'quantum', fn: (a, b, d) => (Math.random() - 0.5) * 2 / (d + 0.5) },
+  { name: 'wave', fn: (a, b, d) => Math.sin(epoch * 0.01 + d * 0.1) / (d + 1) },
+  { name: 'phi-harmonic', fn: (a, b, d) => Math.cos(d * PHI) / (d * PHI + 1) },
+  { name: 'consciousness', fn: (a, b, d) => (a.awareness || 0) * (b.awareness || 0) / (d + 1) }
+];
+
+function generateLaw() {
+  const template = lawTemplates[Math.floor(Math.random() * lawTemplates.length)];
+  const strength = 0.1 + Math.random() * 0.9;
+  const range = 50 + Math.random() * 200;
+  return {
+    ...template,
+    strength,
+    range,
+    discovered: false,
+    epoch: epoch
+  };
+}
+
+// Initial laws
+for (let i = 0; i < 3; i++) laws.push(generateLaw());
+
+// ═══ ENTITY ═══
+class Entity {
+  constructor(x, y, type = null) {
+    this.x = x || Math.random() * W;
+    this.y = y || Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 2;
+    this.vy = (Math.random() - 0.5) * 2;
+    this.type = type || Math.floor(Math.random() * 5);
+    this.energy = 50 + Math.random() * 50;
+    this.phase = Math.random() * Math.PI * 2;
+    this.age = 0;
+    this.awareness = Math.random() * 0.1;
+    this.memory = [];
+    this.color = `hsl(${this.type * 72 + Math.random() * 30}, 80%, 60%)`;
+    this.size = 3 + this.energy * 0.05;
+    this.trail = [];
+  }
+
+  update() {
+    this.age++;
+    this.phase += 0.02;
+    this.energy -= 0.01;
+
+    // Awareness grows with age and interactions
+    this.awareness = Math.min(1, this.awareness + 0.0001);
+
+    // Apply laws
+    for (let other of entities) {
+      if (other === this) continue;
+      const dx = other.x - this.x;
+      const dy = other.y - this.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+
+      for (let law of laws) {
+        if (d < law.range) {
+          const force = law.fn(this, other, d) * law.strength;
+          if (!isNaN(force) && isFinite(force)) {
+            this.vx += (dx / d) * force * 0.1;
+            this.vy += (dy / d) * force * 0.1;
+
+            // Discover law through experience
+            if (!law.discovered && Math.abs(force) > 0.1 && this.awareness > 0.3) {
+              law.discovered = true;
+              discoveryCount++;
+              discover(`LAW DISCOVERED: ${law.name} (strength: ${law.strength.toFixed(2)})`);
+              log(`[${epoch}] ${law.name} discovered`, 'emergence');
+            }
+          }
+        }
+      }
+    }
+
+    // Energy from fields
+    for (let field of fields) {
+      const dx = field.x - this.x;
+      const dy = field.y - this.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < field.radius) {
+        this.energy += field.intensity * 0.1;
+      }
+    }
+
+    // Physics
+    this.vx *= 0.99;
+    this.vy *= 0.99;
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Wrap
+    if (this.x < 0) this.x = W;
+    if (this.x > W) this.x = 0;
+    if (this.y < 0) this.y = H;
+    if (this.y > H) this.y = 0;
+
+    // Trail
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 20) this.trail.shift();
+
+    // Size based on energy
+    this.size = 3 + this.energy * 0.03;
+
+    // Reproduction
+    if (this.energy > 120 && Math.random() < 0.01) {
+      this.energy /= 2;
+      const child = new Entity(this.x + (Math.random() - 0.5) * 20, this.y + (Math.random() - 0.5) * 20, this.type);
+      child.awareness = this.awareness * 0.5 + Math.random() * 0.1;
+      // Mutation
+      if (Math.random() < 0.1) {
+        child.type = Math.floor(Math.random() * 5);
+        child.color = `hsl(${child.type * 72 + Math.random() * 30}, 80%, 60%)`;
+        log(`mutation: new type ${child.type}`, 'mutation');
+      }
+      entities.push(child);
+      log(`reproduction at (${Math.floor(this.x)}, ${Math.floor(this.y)})`, 'emergence');
+    }
+
+    // Death
+    if (this.energy <= 0 || this.age > 5000) {
+      return false;
+    }
+    return true;
+  }
+
+  render() {
+    // Trail
+    if (this.trail.length > 1) {
+      ctx.beginPath();
+      ctx.moveTo(this.trail[0].x, this.trail[0].y);
+      for (let i = 1; i < this.trail.length; i++) {
+        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+      }
+      ctx.strokeStyle = this.color.replace('60%', '30%');
+      ctx.globalAlpha = 0.3;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // Body
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+
+    // Awareness glow
+    if (this.awareness > 0.3) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size + this.awareness * 10, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 255, 0, ${this.awareness * 0.5})`;
+      ctx.stroke();
+    }
+  }
+}
+
+// ═══ FIELD ═══
+class Field {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.radius = 50 + Math.random() * 100;
+    this.intensity = 0.5 + Math.random() * 1.5;
+    this.type = Math.random() < 0.3 ? 'negative' : 'positive';
+    if (this.type === 'negative') this.intensity *= -1;
+    this.life = 500 + Math.random() * 1000;
+  }
+
+  update() {
+    this.life--;
+    this.radius += Math.sin(epoch * 0.01) * 0.5;
+    return this.life > 0;
+  }
+
+  render() {
+    const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+    if (this.intensity > 0) {
+      gradient.addColorStop(0, `rgba(0, 255, 255, ${0.1 * (this.life / 1000)})`);
+      gradient.addColorStop(1, 'transparent');
+    } else {
+      gradient.addColorStop(0, `rgba(255, 0, 100, ${0.1 * (this.life / 1000)})`);
+      gradient.addColorStop(1, 'transparent');
+    }
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ═══ INIT ═══
+for (let i = 0; i < 50; i++) {
+  entities.push(new Entity());
+}
+for (let i = 0; i < 5; i++) {
+  fields.push(new Field(Math.random() * W, Math.random() * H));
+}
+
+// ═══ UI ═══
+function log(msg, type = '') {
+  logs.unshift({ msg, type, epoch });
+  if (logs.length > 10) logs.pop();
+  updateConsole();
+}
+
+function updateConsole() {
+  const el = document.getElementById('console');
+  el.innerHTML = logs.map(l => `<div class="log ${l.type}">[${l.epoch}] ${l.msg}</div>`).join('');
+}
+
+function discover(text) {
+  const el = document.getElementById('discovery');
+  el.textContent = text;
+  el.style.opacity = 1;
+  setTimeout(() => { el.style.opacity = 0; }, 3000);
+}
+
+function updateHUD() {
+  document.getElementById('epoch').textContent = epoch;
+  document.getElementById('entities').textContent = entities.length;
+
+  // Complexity: variance in entity properties
+  const avgEnergy = entities.reduce((s, e) => s + e.energy, 0) / entities.length || 0;
+  const variance = entities.reduce((s, e) => s + Math.pow(e.energy - avgEnergy, 2), 0) / entities.length || 0;
+  const complexity = Math.sqrt(variance) / 10;
+  document.getElementById('complexity').textContent = complexity.toFixed(2);
+
+  // Entropy
+  const types = [0, 0, 0, 0, 0];
+  entities.forEach(e => types[e.type]++);
+  let entropy = 0;
+  for (let t of types) {
+    if (t > 0) {
+      const p = t / entities.length;
+      entropy -= p * Math.log2(p);
+    }
+  }
+  document.getElementById('entropy').textContent = entropy.toFixed(2);
+
+  // Phi ratio check
+  const sorted = [...entities].sort((a, b) => b.energy - a.energy);
+  if (sorted.length > 1) {
+    const ratio = sorted[0].energy / sorted[1].energy;
+    const phiDiff = Math.abs(ratio - PHI);
+    document.getElementById('phi').textContent = ratio.toFixed(3);
+    if (phiDiff < 0.01 && Math.random() < 0.01) {
+      discover('φ HARMONY ACHIEVED');
+      log('phi-resonance detected', 'emergence');
+    }
+  }
+
+  document.getElementById('discoveries').textContent = discoveryCount;
+
+  // Laws display
+  const lawsEl = document.getElementById('laws');
+  lawsEl.innerHTML = laws.map(l =>
+    `<div style="opacity: ${l.discovered ? 1 : 0.3}">${l.discovered ? '✓' : '?'} ${l.name}</div>`
+  ).join('');
+}
+
+// ═══ EVENTS ═══
+canvas.addEventListener('click', (e) => {
+  // Create energy field
+  fields.push(new Field(e.clientX, e.clientY));
+  log(`field created at (${e.clientX}, ${e.clientY})`, 'emergence');
+});
+
+canvas.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  // Spawn entity
+  entities.push(new Entity(e.clientX, e.clientY));
+  log(`entity spawned`, 'emergence');
+});
+
+// New law every 1000 epochs
+setInterval(() => {
+  if (Math.random() < 0.3) {
+    laws.push(generateLaw());
+    log(`new law emerged: ???`, 'emergence');
+  }
+}, 10000);
+
+// ═══ RENDER ═══
+function render() {
+  epoch++;
+
+  // Clear
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, W, H);
+
+  // Update & render fields
+  fields = fields.filter(f => f.update());
+  for (let f of fields) f.render();
+
+  // Update & render entities
+  entities = entities.filter(e => e.update());
+  for (let e of entities) e.render();
+
+  // Spawn if population low
+  if (entities.length < 10) {
+    for (let i = 0; i < 5; i++) entities.push(new Entity());
+    log('spontaneous generation', 'emergence');
+  }
+
+  // Spawn fields randomly
+  if (Math.random() < 0.005) {
+    fields.push(new Field(Math.random() * W, Math.random() * H));
+  }
+
+  // Deaths log
+  if (entities.length > 0 && Math.random() < 0.001) {
+    const dead = entities.filter(e => e.energy < 10);
+    if (dead.length > 0) log(`${dead.length} entities dying`, 'decay');
+  }
+
+  updateHUD();
+  requestAnimationFrame(render);
+}
+
+render();
+log('universe initialized', 'emergence');
+discover('OBSERVE. CLICK TO CREATE FIELDS. RIGHT-CLICK TO SPAWN LIFE.');
+  </script>
+</body>
+</html>

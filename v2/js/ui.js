@@ -11,11 +11,38 @@ export const $hud = () => $('hud');
 export const $pulse = () => $('pulse');
 export const $titre = () => $('titre');
 
+// Copy to clipboard
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = '⎘', 1200);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = '⎘', 1200);
+    });
+}
+
 // Say something
 export function say(text, type = 'zoe') {
     const msg = document.createElement('div');
     msg.className = 'msg ' + type;
     msg.innerHTML = text;
+
+    // Add copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = '⎘';
+    copyBtn.title = 'Copier';
+    copyBtn.onclick = e => {
+        e.stopPropagation();
+        copyToClipboard(msg.textContent.replace(/[⎘✓]/g, '').trim(), copyBtn);
+    };
+    msg.appendChild(copyBtn);
+
     $messages().appendChild(msg);
     $messages().scrollTop = $messages().scrollHeight;
     game.history.push({ type, text, ts: Date.now() });

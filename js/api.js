@@ -1,141 +1,104 @@
-// api.js - Claude API with retry + timeout
-// ES Module
+// api.js - Claude API: retry, history, sentence rendering
 
 import state from './state.js';
-import errors from './errors.js';
-import { CLAUDE_ENDPOINT, SCIENCE_PROMPT } from './data.js';
+import { say, showTyping, hideTyping, wait, toast } from './ui.js';
+import {
+    CLAUDE_ENDPOINT, CLAUDE_MODEL, API_VERSION,
+    MAX_TOKENS, MAX_HISTORY, API_RETRIES, API_TIMEOUT, API_BACKOFF,
+    SYSTEM_PROMPT
+} from './data.js';
 
-const DEFAULT_RETRIES = 3;
-const DEFAULT_TIMEOUT = 30000; // 30s
-const BACKOFF_BASE = 1000; // 1s
-
-// Sleep utility
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Fetch with timeout
+// Fetch with timeout using AbortController
 async function fetchWithTimeout(url, options, timeout) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-
     try {
-        const response = await fetch(url, {
-            ...options,
-            signal: controller.signal
-        });
+        const res = await fetch(url, { ...options, signal: controller.signal });
         clearTimeout(timeoutId);
-        return response;
-    } catch(e) {
+        return res;
+    } catch (e) {
         clearTimeout(timeoutId);
-        if (e.name === 'AbortError') {
-            throw new Error('Request timeout');
-        }
+        if (e.name === 'AbortError') throw new Error('Request timeout');
         throw e;
     }
 }
 
-// Main Claude API call with retry
-export async function askClaude(question, retries = DEFAULT_RETRIES) {
-    if (!state.claudeKey) {
-        errors.info('Pas de cle API configuree');
-        return null;
+// Send message to Claude with conversation history and retry
+export async function askClaude(message) {
+    if (!state.apiKey) return null;
+    if (!state.isOnline) return null;
+
+    // Add user message to history
+    state.conversationHistory.push({ role: 'user', content: message });
+    if (state.conversationHistory.length > MAX_HISTORY) {
+        state.conversationHistory = state.conversationHistory.slice(-MAX_HISTORY);
     }
 
-    if (!state.isOnline) {
-        errors.warn('Hors ligne');
-        return null;
-    }
-
-    for (let i = 0; i < retries; i++) {
+    for (let i = 0; i < API_RETRIES; i++) {
         try {
             const res = await fetchWithTimeout(CLAUDE_ENDPOINT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': state.claudeKey,
-                    'anthropic-version': '2023-06-01',
+                    'x-api-key': state.apiKey,
+                    'anthropic-version': API_VERSION,
                     'anthropic-dangerous-direct-browser-access': 'true'
                 },
                 body: JSON.stringify({
-                    model: 'claude-sonnet-4-20250514',
-                    max_tokens: 300,
-                    system: SCIENCE_PROMPT,
-                    messages: [{ role: 'user', content: question }]
+                    model: CLAUDE_MODEL,
+                    max_tokens: MAX_TOKENS,
+                    system: SYSTEM_PROMPT,
+                    messages: state.conversationHistory
                 })
-            }, DEFAULT_TIMEOUT);
+            }, API_TIMEOUT);
 
             if (!res.ok) {
-                const errorText = await res.text().catch(() => '');
-                throw new Error(`HTTP ${res.status}: ${errorText.slice(0, 100)}`);
+                if (res.status === 401 || res.status === 403) {
+                    toast('cle API invalide.', 'error');
+                    return null;
+                }
+                if (res.status === 429) {
+                    toast('trop de requetes. patiente.', 'warn');
+                    await wait(API_BACKOFF * (i + 1) * 2);
+                    continue;
+                }
+                throw new Error(`HTTP ${res.status}`);
             }
 
             const data = await res.json();
-            const text = data.content?.[0]?.text;
+            const reply = data.content?.[0]?.text;
+            if (!reply) throw new Error('Empty response');
 
-            if (!text) {
-                throw new Error('Reponse vide de Claude');
-            }
+            // Add assistant reply to history
+            state.conversationHistory.push({ role: 'assistant', content: reply });
+            return reply;
 
-            return text;
-
-        } catch(e) {
-            const attempt = i + 1;
-            errors.warn(`API tentative ${attempt}/${retries}: ${e.message}`);
-
-            // Don't retry on specific errors
-            if (e.message.includes('401') || e.message.includes('403')) {
-                errors.error('Cle API invalide');
-                return null;
-            }
-
-            if (e.message.includes('429')) {
-                errors.warn('Limite de requetes atteinte');
-                // Wait longer for rate limit
-                await sleep(BACKOFF_BASE * (i + 1) * 2);
-                continue;
-            }
-
-            // Exponential backoff for other errors
-            if (i < retries - 1) {
-                await sleep(BACKOFF_BASE * (i + 1));
+        } catch (e) {
+            console.warn(`[zoe:api] attempt ${i + 1}/${API_RETRIES}: ${e.message}`);
+            if (i < API_RETRIES - 1) {
+                await wait(API_BACKOFF * (i + 1));
             }
         }
     }
 
-    errors.error('Impossible de contacter Claude apres plusieurs essais');
     return null;
 }
 
-// Set API key
-export function setKey(key) {
-    if (!key || !key.startsWith('sk-')) {
-        errors.error('Format de cle invalide. Utilise sk-ant-...');
-        return false;
+// Render Claude response sentence by sentence with typing indicator
+export async function renderSentences(text) {
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
+    for (let i = 0; i < sentences.length; i++) {
+        say(sentences[i]);
+        if (i < sentences.length - 1) {
+            await wait(300);
+            showTyping();
+            await wait(400);
+            hideTyping();
+        }
     }
-
-    state.setKey(key);
-    errors.info('Cle enregistree');
-    return true;
 }
 
-// Check connection status
-export function getStatus() {
-    return {
-        hasKey: !!state.claudeKey,
-        isOnline: state.isOnline
-    };
+// Check if API is configured
+export function hasKey() {
+    return !!state.apiKey;
 }
-
-// Test API connection
-export async function testConnection() {
-    const response = await askClaude('Dis juste "ok" pour tester la connexion.', 1);
-    return !!response;
-}
-
-export default {
-    askClaude,
-    setKey,
-    getStatus,
-    testConnection
-};

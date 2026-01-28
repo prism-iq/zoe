@@ -104,7 +104,27 @@ body {
     border-radius: 20px;
     line-height: 1.5;
     animation: fadeIn 0.3s ease;
+    position: relative;
 }
+
+/* Copy button */
+.copy-btn {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--zoe-faint);
+    padding: 0.15rem 0.3rem;
+    font-size: 0.6rem;
+    border-radius: 4px;
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.msg:hover .copy-btn { opacity: 0.6; }
+.copy-btn:hover { opacity: 1 !important; border-color: var(--zoe-faint); color: var(--zoe-soft); }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

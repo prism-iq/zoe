@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZOE - &#950;&#969;&#942; - Where Programs Live</title>
+  <meta name="description" content="ZOE - Pantheon web interface. Where programs live.">
+  <meta name="theme-color" content="#1a1a2e">
+  <style>
+    /* === RESET === */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #1a1a2e;
+      --bg-deep: #12121f;
+      --surface: #16213e;
+      --border: #0f3460;
+      --text: #c8c8d0;
+      --text-dim: #666680;
+      --accent: #0ff;
+      --accent-glow: rgba(0, 255, 255, 0.15);
+      --danger: #f44;
+      --success: #0f8;
+      --warn: #fa0;
+      --phi: 1.6180339887;
+      --radius: 6px;
+    }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', monospace;
+      font-size: 14px;
+      line-height: 1.618;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* === PHI-BREATHING ANIMATIONS === */
+    @keyframes phi-breathe {
+      0%   { transform: scale(1);      opacity: 0.8; }
+      50%  { transform: scale(1.0618); opacity: 1; }
+      100% { transform: scale(1);      opacity: 0.8; }
+    }
+
+    @keyframes phi-glow {
+      0%   { box-shadow: 0 0 8px var(--accent-glow), 0 0 20px transparent; }
+      50%  { box-shadow: 0 0 16px var(--accent), 0 0 40px var(--accent-glow); }
+      100% { box-shadow: 0 0 8px var(--accent-glow), 0 0 20px transparent; }
+    }
+
+    @keyframes phi-pulse-ring {
+      0%   { transform: scale(0.8); opacity: 0.6; }
+      50%  { transform: scale(1.618); opacity: 0; }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes phi-border-pulse {
+      0%   { border-color: var(--border); }
+      50%  { border-color: rgba(0, 255, 255, 0.3); }
+      100% { border-color: var(--border); }
+    }
+
+    .phi-breathe {
+      animation: phi-breathe 1.618s ease-in-out infinite;
+    }
+
+    .phi-glow {
+      animation: phi-glow 1.618s ease-in-out infinite;
+    }
+
+    .phi-border {
+      animation: phi-border-pulse 1.618s ease-in-out infinite;
+    }
+
+    /* === LAYOUT === */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* === HEADER === */
+    header {
+      text-align: center;
+      padding: 3rem 0 2rem;
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 2.6rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      color: var(--accent);
+      text-shadow: 0 0 30px var(--accent-glow), 0 0 60px rgba(0,255,255,0.05);
+    }
+
+    header .subtitle {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      letter-spacing: 0.15em;
+    }
+
+    header .version-tag {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      background: rgba(0,255,255,0.06);
+      border: 1px solid rgba(0,255,255,0.12);
+      border-radius: 3px;
+      padding: 0.15rem 0.6rem;
+      letter-spacing: 0.1em;
+    }
+
+    .header-orb-container {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      margin: 1.4rem auto 0;
+    }
+
+    .header-orb {
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      box-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent-glow);
+    }
+
+    .header-orb-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      animation: phi-pulse-ring 1.618s ease-out infinite;
+    }
+
+    /* === STATS BAR === */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      padding: 1.2rem 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* === GRID === */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    /* === PANEL === */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      animation: fade-in-up 0.6s ease-out both;
+    }
+
+    .panel-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-title .refresh-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .panel-title .refresh-dot.active {
+      opacity: 1;
+      animation: phi-breathe 0.6s ease-out;
+    }
+
+    /* === DAEMON CARDS === */
+    .daemon-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .daemon-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .daemon-card:hover {
+      border-color: var(--accent);
+      background: rgba(0,255,255,0.03);
+    }
+
+    .daemon-card.self {
+      border-color: rgba(0,255,255,0.25);
+    }
+
+    .daemon-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .daemon-dot.up      { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .daemon-dot.down    { background: var(--danger);  box-shadow: 0 0 8px var(--danger); }
+    .daemon-dot.timeout { background: var(--warn);    box-shadow: 0 0 8px var(--warn); }
+    .daemon-dot.unknown { background: var(--text-dim); }
+
+    .daemon-info { flex: 1; min-width: 0; }
+
+    .daemon-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .daemon-port {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+
+    .daemon-status {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .daemon-status.up      { color: var(--success); }
+    .daemon-status.down    { color: var(--danger); }
+    .daemon-status.timeout { color: var(--warn); }
+    .daemon-status.unknown { color: var(--text-dim); }
+
+    /* === KNOWLEDGE PANEL === */
+    .knowledge-list { list-style: none; }
+
+    .knowledge-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 0.85rem;
+    }
+
+    .knowledge-list li:last-child { border-bottom: none; }
+    .knowledge-list .k-label { color: var(--text-dim); }
+    .knowledge-list .k-value { color: var(--accent); font-weight: 500; }
+
+    /* === CHAT SECTION === */
+    .chat-section { grid-column: 1 / -1; }
+
+    .chat-messages {
+      height: 260px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+    }
+
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-track { background: transparent; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .msg { padding: 0.35rem 0; line-height: 1.5; }
+    .msg .sender { font-weight: 600; margin-right: 0.5rem; }
+    .msg .sender.user   { color: var(--accent); }
+    .msg .sender.zoe    { color: var(--success); }
+    .msg .sender.system { color: var(--text-dim); }
+
+    .chat-input-row { display: flex; gap: 0.75rem; }
+
+    .chat-input-row textarea {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.85rem;
+      padding: 0.65rem 0.85rem;
+      resize: none;
+      height: 44px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input-row textarea:focus { border-color: var(--accent); }
+
+    .chat-input-row button {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: var(--radius);
+      padding: 0 1.5rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .chat-input-row button:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* === WS INDICATOR === */
+    .ws-indicator {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .ws-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .ws-dot.connected {
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    /* === FOOTER === */
+    footer {
+      text-align: center;
+      padding: 2rem 0 1.5rem;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+
+    footer .phi-symbol { color: var(--accent); font-size: 0.9rem; }
+    footer .rust-tag   { color: var(--warn); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <header>
+      <h1>ZOE</h1>
+      <div class="subtitle">&zeta;&omega;&eta; &mdash; Where Programs Live</div>
+      <div class="version-tag">v3.0.0 &middot; rust/axum &middot; port 9601</div>
+      <div class="header-orb-container">
+        <div class="header-orb phi-breathe"></div>
+        <div class="header-orb-ring"></div>
+      </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value phi-glow" id="stat-alive">--</div>
+        <div class="stat-label">Daemons Alive</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">6</div>
+        <div class="stat-label">Total Daemons</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="stat-uptime">--</div>
+        <div class="stat-label">Uptime (s)</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="grid">
+
+      <!-- DAEMON STATUS -->
+      <div class="panel phi-border" style="animation-delay: 0.1s">
+        <div class="panel-title">
+          Pantheon Daemons
+          <span class="refresh-dot" id="refresh-dot"></span>
+        </div>
+        <div class="daemon-grid" id="daemon-grid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- KNOWLEDGE -->
+      <div class="panel" style="animation-delay: 0.2s">
+        <div class="panel-title">System</div>
+        <ul class="knowledge-list">
+          <li><span class="k-label">Backend</span><span class="k-value">Rust / axum</span></li>
+          <li><span class="k-label">Port</span><span class="k-value">9601</span></li>
+          <li><span class="k-label">Server uptime</span><span class="k-value" id="k-uptime">--</span></li>
+          <li><span class="k-label">Phi constant</span><span class="k-value">1.6180339887</span></li>
+          <li><span class="k-label">Refresh interval</span><span class="k-value" id="k-interval">--</span></li>
+          <li><span class="k-label">WebSocket</span><span class="k-value" id="k-ws">disconnected</span></li>
+        </ul>
+      </div>
+
+      <!-- CHAT -->
+      <div class="panel chat-section" style="animation-delay: 0.3s">
+        <div class="panel-title">Chat &mdash; Cipher Interface</div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="msg"><span class="sender system">[system]</span>ZOE v3.0.0 Rust interface ready. Type a message to reach Cipher.</div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" placeholder="speak..." rows="1"></textarea>
+          <button id="chat-send">Send</button>
+        </div>
+      </div>
+
+    </div>
+
+    <footer>
+      <span class="phi-symbol">&phi;</span> = 1.6180339887 &middot;
+      <span class="rust-tag">rust</span> &middot;
+      le code est po&eacute;sie
+    </footer>
+
+  </div>
+
+  <!-- WebSocket indicator -->
+  <div class="ws-indicator">
+    <div class="ws-dot" id="ws-dot"></div>
+    <span id="ws-label">ws</span>
+  </div>
+
+  <script>
+    /* === ZOE CLIENT v3 === */
+    (function () {
+      'use strict';
+
+      const PHI = 1.6180339887;
+      const REFRESH_MS = Math.round(PHI * 10 * 1000); // ~16.18s
+
+      // --- DOM refs ---
+      const daemonGrid   = document.getElementById('daemon-grid');
+      const chatMessages = document.getElementById('chat-messages');
+      const chatInput    = document.getElementById('chat-input');
+      const chatSend     = document.getElementById('chat-send');
+      const refreshDot   = document.getElementById('refresh-dot');
+      const wsDot        = document.getElementById('ws-dot');
+      const wsLabel      = document.getElementById('ws-label');
+
+      document.getElementById('k-interval').textContent = (REFRESH_MS / 1000).toFixed(2) + 's';
+
+      // --- Daemon status polling ---
+      async function fetchPantheon() {
+        // Flash the refresh indicator
+        refreshDot.classList.add('active');
+        setTimeout(() => refreshDot.classList.remove('active'), 600);
+
+        try {
+          const res = await fetch('/api/pantheon');
+          const data = await res.json();
+          renderDaemons(data.pantheon);
+          document.getElementById('stat-alive').textContent = data.summary.alive;
+          document.getElementById('stat-total').textContent = data.summary.total;
+        } catch (e) {
+          console.warn('[ZOE] pantheon fetch failed:', e);
+        }
+      }
+
+      // --- Server status polling ---
+      async function fetchStatus() {
+        try {
+          const res = await fetch('/status');
+          const data = await res.json();
+          document.getElementById('stat-uptime').textContent = data.uptime;
+          document.getElementById('k-uptime').textContent = data.uptime + 's';
+        } catch (e) {
+          console.warn('[ZOE] status fetch failed:', e);
+        }
+      }
+
+      // --- Render daemon cards ---
+      function renderDaemons(daemons) {
+        daemonGrid.innerHTML = '';
+        daemons.forEach(function (d) {
+          var card = document.createElement('div');
+          card.className = 'daemon-card';
+          if (d.port === 9601) card.className += ' self';
+          var st = d.status === 'up' ? 'up' : (d.status === 'timeout' ? 'timeout' : 'down');
+          card.innerHTML =
+            '<div class="daemon-dot ' + st + '"></div>' +
+            '<div class="daemon-info">' +
+              '<div class="daemon-name">' + escapeHtml(d.name) + '</div>' +
+              '<div class="daemon-port">:' + d.port + '</div>' +
+            '</div>' +
+            '<div class="daemon-status ' + st + '">' + st + '</div>';
+          daemonGrid.appendChild(card);
+        });
+      }
+
+      // --- Chat ---
+      function appendMsg(sender, text) {
+        var div = document.createElement('div');
+        div.className = 'msg';
+        div.innerHTML = '<span class="sender ' + sender + '">[' + sender + ']</span>' + escapeHtml(text);
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      function escapeHtml(str) {
+        var d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+      }
+
+      async function sendChat() {
+        var text = chatInput.value.trim();
+        if (!text) return;
+        chatInput.value = '';
+        appendMsg('user', text);
+
+        try {
+          var res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+          });
+          var data = await res.json();
+          if (data.error) {
+            appendMsg('system', data.error);
+          } else {
+            appendMsg('zoe', data.response || JSON.stringify(data));
+          }
+        } catch (e) {
+          appendMsg('system', 'cipher unreachable - daemon offline');
+        }
+      }
+
+      chatSend.addEventListener('click', sendChat);
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChat();
+        }
+      });
+
+      // --- WebSocket ---
+      var ws = null;
+      var wsReconnectDelay = 1000;
+
+      function connectWS() {
+        var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(proto + '//' + location.host + '/ws');
+
+        ws.onopen = function () {
+          wsDot.classList.add('connected');
+          wsLabel.textContent = 'ws connected';
+          document.getElementById('k-ws').textContent = 'connected';
+          wsReconnectDelay = 1000;
+        };
+
+        ws.onmessage = function (e) {
+          try {
+            var msg = JSON.parse(e.data);
+            if (msg.type === 'status') {
+              // Could update daemon statuses from WS push
+            }
+          } catch (_) {
+            // plain text message
+          }
+        };
+
+        ws.onclose = function () {
+          wsDot.classList.remove('connected');
+          wsLabel.textContent = 'ws';
+          document.getElementById('k-ws').textContent = 'disconnected';
+          // Reconnect with backoff capped at phi * 10s
+          setTimeout(connectWS, wsReconnectDelay);
+          wsReconnectDelay = Math.min(wsReconnectDelay * PHI, PHI * 10 * 1000);
+        };
+
+        ws.onerror = function () {
+          ws.close();
+        };
+      }
+
+      // --- Init ---
+      fetchPantheon();
+      fetchStatus();
+      connectWS();
+
+      // Refresh at phi-derived interval
+      setInterval(fetchPantheon, REFRESH_MS);
+      setInterval(fetchStatus, REFRESH_MS);
+
+    })();
+  </script>
+
+</body>
+</html>

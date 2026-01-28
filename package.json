@@ -1,5 +1,13 @@
 {
+  "name": "zoe",
+  "version": "2.0.0",
+  "description": "ZOE - Where Programs Live - Pantheon public interface",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
+    "express": "^4.22.1",
     "puppeteer": "^24.35.0"
   }
 }

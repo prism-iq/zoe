@@ -108,7 +108,27 @@ body {
     border-radius: 20px;
     line-height: 1.5;
     animation: fadeIn 0.3s ease;
+    position: relative;
 }
+
+.copy-btn {
+    position: absolute;
+    top: 0.3rem;
+    right: 0.3rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--zoe-faint);
+    padding: 0.15rem 0.3rem;
+    font-size: 0.6rem;
+    border-radius: 4px;
+    opacity: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.msg:hover .copy-btn { opacity: 0.6; }
+.copy-btn:hover { opacity: 1 !important; border-color: var(--zoe-faint); }
+.copy-btn.copied { color: var(--gold); }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
@@ -149,7 +169,47 @@ body {
 /* Input */
 #input-wrap {
     padding: 0.8rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
 }
+
+#restore-btn {
+    background: transparent;
+    border: 1px solid var(--zoe-faint);
+    color: var(--zoe-faint);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+#restore-btn:hover:not(:disabled) {
+    border-color: var(--zoe-soft);
+    color: var(--zoe-soft);
+}
+
+#restore-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+#history-hint {
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--zoe-faint);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+#history-hint.visible { opacity: 1; }
 
 #input {
     width: 100%;
@@ -246,7 +306,9 @@ body {
     <div id="messages"></div>
     <div id="choices"></div>
     <div id="input-wrap">
+        <button id="restore-btn" title="Restaurer (Ctrl+Z)" disabled>↺</button>
         <input type="text" id="input" placeholder="..." autofocus>
+        <span id="history-hint"></span>
     </div>
 </div>
 
@@ -273,11 +335,109 @@ const $level = $('level');
 const $fragments = $('fragments');
 const $pulse = $('pulse');
 const $titre = $('titre');
+const $restore = $('restore-btn');
+const $historyHint = $('history-hint');
+
+// === INPUT HISTORY & RESTORE ===
+let inputHistory = [];
+let historyIndex = -1;
+let lastDeleted = null;
+let tempInput = '';
+
+// Load history
+try {
+    const saved = localStorage.getItem('zoe-history');
+    if (saved) inputHistory = JSON.parse(saved).slice(-50);
+} catch(e) {}
+
+function saveHistory(text) {
+    if (text && text.trim() && text !== inputHistory[inputHistory.length - 1]) {
+        inputHistory.push(text);
+        if (inputHistory.length > 50) inputHistory.shift();
+        try { localStorage.setItem('zoe-history', JSON.stringify(inputHistory)); } catch(e) {}
+    }
+    historyIndex = -1;
+    tempInput = '';
+}
+
+function navigateHistory(dir) {
+    if (inputHistory.length === 0) return;
+    if (historyIndex === -1) tempInput = $input.value;
+
+    if (dir === 'up' && historyIndex < inputHistory.length - 1) {
+        historyIndex++;
+        $input.value = inputHistory[inputHistory.length - 1 - historyIndex];
+        showHistoryHint(`↑ ${historyIndex + 1}/${inputHistory.length}`);
+    } else if (dir === 'down') {
+        if (historyIndex > 0) {
+            historyIndex--;
+            $input.value = inputHistory[inputHistory.length - 1 - historyIndex];
+            showHistoryHint(`↓ ${historyIndex + 1}/${inputHistory.length}`);
+        } else if (historyIndex === 0) {
+            historyIndex = -1;
+            $input.value = tempInput;
+            showHistoryHint('↓ nouveau');
+        }
+    }
+    setTimeout(() => $input.selectionStart = $input.selectionEnd = $input.value.length, 0);
+}
+
+function showHistoryHint(text) {
+    $historyHint.textContent = text;
+    $historyHint.classList.add('visible');
+    setTimeout(() => $historyHint.classList.remove('visible'), 1500);
+}
+
+function saveForRestore(text) {
+    if (text && text.trim()) {
+        lastDeleted = text;
+        $restore.disabled = false;
+    }
+}
+
+function restore() {
+    if (lastDeleted) {
+        $input.value = lastDeleted;
+        lastDeleted = null;
+        $restore.disabled = true;
+        $input.focus();
+    }
+}
+
+$restore.addEventListener('click', restore);
+
+// === COPY TO CLIPBOARD ===
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1200);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓'; btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1200);
+    });
+}
 
 function say(text, type = 'zoe') {
     const msg = document.createElement('div');
     msg.className = 'msg ' + type;
     msg.innerHTML = text;
+
+    // Add copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = '⎘';
+    copyBtn.title = 'Copier';
+    copyBtn.onclick = (e) => {
+        e.stopPropagation();
+        copyToClipboard(msg.textContent.replace('⎘', '').replace('✓', '').trim(), copyBtn);
+    };
+    msg.appendChild(copyBtn);
+
     $messages.appendChild(msg);
     $messages.scrollTop = $messages.scrollHeight;
     game.history.push({ type, text });
@@ -587,10 +747,16 @@ async function respond(input) {
     await maybeFragment();
 }
 
-// === INPUT ===
+// === INPUT KEYBOARD HANDLING ===
+// IMPORTANT: No killswitches - Delete/Backspace work normally in input field
+
 $input.addEventListener('keydown', async (e) => {
+    // Enter = send message
     if (e.key === 'Enter' && $input.value.trim()) {
+        e.preventDefault();
         const value = $input.value.trim();
+        saveHistory(value);
+        saveForRestore(value);
         say(value, 'user');
         $input.value = '';
         $input.disabled = true;
@@ -599,6 +765,53 @@ $input.addEventListener('keydown', async (e) => {
 
         $input.disabled = false;
         $input.focus();
+        return;
+    }
+
+    // Arrow Up = navigate history (when at start of input)
+    if (e.key === 'ArrowUp' && $input.selectionStart === 0) {
+        e.preventDefault();
+        navigateHistory('up');
+        return;
+    }
+
+    // Arrow Down = navigate history (when at end of input)
+    if (e.key === 'ArrowDown' && $input.selectionStart === $input.value.length) {
+        e.preventDefault();
+        navigateHistory('down');
+        return;
+    }
+
+    // Escape = clear input (save for restore)
+    if (e.key === 'Escape' && $input.value) {
+        saveForRestore($input.value);
+        $input.value = '';
+        historyIndex = -1;
+        return;
+    }
+
+    // Ctrl+Z on empty = restore
+    if (e.ctrlKey && e.key === 'z' && !$input.value) {
+        e.preventDefault();
+        restore();
+        return;
+    }
+});
+
+// Global shortcuts (only when input not focused)
+document.addEventListener('keydown', (e) => {
+    // SAFETY: Never intercept typing keys globally
+    if (document.activeElement === $input) return;
+
+    // Focus input on letter press
+    if (e.key.length === 1 && /[a-zA-Z]/.test(e.key) && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        $input.focus();
+    }
+
+    // Ctrl+Shift+C = copy last message
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        const lastMsg = $messages.querySelector('.msg:last-child');
+        if (lastMsg) navigator.clipboard.writeText(lastMsg.textContent.replace('⎘', '').trim());
     }
 });
 

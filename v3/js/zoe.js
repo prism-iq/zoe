@@ -45,14 +45,113 @@ const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const keyBtn = document.getElementById('key');
 
+// === INPUT HISTORY & RESTORE ===
+let inputHistory = [];
+let historyIndex = -1;
+let lastDeleted = null;
+let tempInput = '';
+
+try {
+    const saved = localStorage.getItem('zoe-v3-history');
+    if (saved) inputHistory = JSON.parse(saved).slice(-50);
+} catch(e) {}
+
+function saveHistory(text) {
+    if (text && text.trim() && text !== inputHistory[inputHistory.length - 1]) {
+        inputHistory.push(text);
+        if (inputHistory.length > 50) inputHistory.shift();
+        try { localStorage.setItem('zoe-v3-history', JSON.stringify(inputHistory)); } catch(e) {}
+    }
+    historyIndex = -1;
+    tempInput = '';
+}
+
+function navigateHistory(dir) {
+    if (inputHistory.length === 0) return;
+    if (historyIndex === -1) tempInput = input.value;
+
+    if (dir === 'up' && historyIndex < inputHistory.length - 1) {
+        historyIndex++;
+        input.value = inputHistory[inputHistory.length - 1 - historyIndex];
+    } else if (dir === 'down') {
+        if (historyIndex > 0) {
+            historyIndex--;
+            input.value = inputHistory[inputHistory.length - 1 - historyIndex];
+        } else if (historyIndex === 0) {
+            historyIndex = -1;
+            input.value = tempInput;
+        }
+    }
+    setTimeout(() => input.selectionStart = input.selectionEnd = input.value.length, 0);
+}
+
+function saveForRestore(text) {
+    if (text && text.trim()) lastDeleted = text;
+}
+
+function restore() {
+    if (lastDeleted) {
+        input.value = lastDeleted;
+        lastDeleted = null;
+        input.focus();
+    }
+}
+
 // Initialisation
 function init() {
     if (apiKey) keyBtn.classList.add('active');
 
     keyBtn.onclick = setKey;
+
+    // === KEYBOARD HANDLING - No killswitches ===
     input.onkeydown = e => {
-        if (e.key === 'Enter' && input.value.trim()) send();
+        // Enter = send
+        if (e.key === 'Enter' && input.value.trim()) {
+            e.preventDefault();
+            saveHistory(input.value.trim());
+            saveForRestore(input.value.trim());
+            send();
+            return;
+        }
+
+        // Arrow Up = history (at start)
+        if (e.key === 'ArrowUp' && input.selectionStart === 0) {
+            e.preventDefault();
+            navigateHistory('up');
+            return;
+        }
+
+        // Arrow Down = history (at end)
+        if (e.key === 'ArrowDown' && input.selectionStart === input.value.length) {
+            e.preventDefault();
+            navigateHistory('down');
+            return;
+        }
+
+        // Escape = clear (save for restore)
+        if (e.key === 'Escape' && input.value) {
+            saveForRestore(input.value);
+            input.value = '';
+            historyIndex = -1;
+            return;
+        }
+
+        // Ctrl+Z on empty = restore
+        if (e.ctrlKey && e.key === 'z' && !input.value) {
+            e.preventDefault();
+            restore();
+            return;
+        }
     };
+
+    // Global shortcuts
+    document.addEventListener('keydown', e => {
+        if (document.activeElement === input) return;
+        // Focus on letter
+        if (e.key.length === 1 && /[a-zA-Z]/.test(e.key) && !e.ctrlKey && !e.altKey) {
+            input.focus();
+        }
+    });
 
     // Premier message
     setTimeout(() => say("hey."), 500);
@@ -71,11 +170,38 @@ function setKey() {
     }
 }
 
+// === COPY TO CLIPBOARD ===
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = '⎘', 1200);
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        btn.textContent = '✓';
+        setTimeout(() => btn.textContent = '⎘', 1200);
+    });
+}
+
 // Afficher un message
 function say(text, who = 'zoe') {
     const div = document.createElement('div');
     div.className = `msg ${who}`;
     div.textContent = text;
+
+    // Copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.textContent = '⎘';
+    copyBtn.title = 'Copier';
+    copyBtn.onclick = e => {
+        e.stopPropagation();
+        copyToClipboard(div.textContent.replace(/[⎘✓]/g, '').trim(), copyBtn);
+    };
+    div.appendChild(copyBtn);
+
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return div;

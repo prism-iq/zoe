@@ -60,7 +60,25 @@ header {
     padding: 10px 14px;
     border-radius: 16px;
     line-height: 1.4;
+    position: relative;
 }
+
+.copy-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    font-size: 0.7em;
+    cursor: pointer;
+    opacity: 0;
+    padding: 2px 4px;
+    transition: opacity 0.2s;
+}
+
+.msg:hover .copy-btn { opacity: 0.6; }
+.copy-btn:hover { opacity: 1 !important; color: var(--zoe); }
 
 .msg.zoe {
     align-self: flex-start;

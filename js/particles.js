@@ -1,12 +1,11 @@
-// particles.js - Canvas particle animation
-// ES Module
+// particles.js - Canvas particle system (v1 class + v2 react/add)
 
 let canvas = null;
 let ctx = null;
 let particles = [];
 let animationId = null;
 
-const PARTICLE_COUNT = 30;
+const PARTICLE_MIN = 30;
 const PARTICLE_MAX = 50;
 
 class Particle {
@@ -17,6 +16,7 @@ class Particle {
         this.vy = (Math.random() - 0.5) * 0.5;
         this.life = 1;
         this.size = Math.random() * 2 + 1;
+        this.alpha = Math.random() * 0.5;
     }
 
     update() {
@@ -24,99 +24,96 @@ class Particle {
         this.y += this.vy;
         this.life -= 0.003;
 
-        // Bounce off edges
-        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        // Wrap around edges
+        if (this.x < 0) this.x = canvas.width;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.y < 0) this.y = canvas.height;
+        if (this.y > canvas.height) this.y = 0;
     }
 
     draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(168,230,207,${this.life * 0.4})`;
+        ctx.fillStyle = `rgba(168,230,207,${Math.min(this.life, this.alpha) * 0.8})`;
         ctx.fill();
     }
 }
 
 // Initialize particle system
-export function initParticles(canvasElement) {
+export function init(canvasElement) {
     canvas = canvasElement;
-    if (!canvas) return false;
-
+    if (!canvas) return;
     ctx = canvas.getContext('2d');
-    if (!ctx) return false;
+    if (!ctx) return;
 
     resize();
     window.addEventListener('resize', resize);
 
-    // Create initial particles
     for (let i = 0; i < PARTICLE_MAX; i++) {
         particles.push(new Particle());
     }
 
-    // Start animation loop
     animate();
-
-    // Expose burst function globally
-    window.particleBurst = burst;
-
-    return true;
 }
 
-// Handle resize
 function resize() {
     if (!canvas) return;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 }
 
-// Animation loop
 function animate() {
     if (!ctx || !canvas) return;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Remove dead particles
     particles = particles.filter(p => p.life > 0);
 
-    // Update and draw
     particles.forEach(p => {
         p.update();
         p.draw();
     });
 
-    // Maintain minimum particle count
-    while (particles.length < PARTICLE_COUNT) {
+    // Maintain minimum count
+    while (particles.length < PARTICLE_MIN) {
         particles.push(new Particle());
     }
 
     animationId = requestAnimationFrame(animate);
 }
 
-// Create burst of particles at position
+// Burst particles at position
 export function burst(x, y, count = 10) {
     if (!canvas) return;
-
     for (let i = 0; i < count; i++) {
         particles.push(new Particle(x, y));
     }
 }
 
-// Stop animation
-export function stop() {
-    if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
+// React to input (game mode) - accelerate particles
+export function react(intensity = 1) {
+    particles.forEach(p => {
+        p.vx += (Math.random() - 0.5) * 2 * intensity;
+        p.vy += (Math.random() - 0.5) * 2 * intensity;
+    });
+
+    // Calm down after 1s
+    setTimeout(() => {
+        particles.forEach(p => {
+            p.vx *= 0.5;
+            p.vy *= 0.5;
+        });
+    }, 1000);
+}
+
+// Add more particles (evolution)
+export function addParticles(count = 10) {
+    if (!canvas) return;
+    for (let i = 0; i < count; i++) {
+        particles.push(new Particle());
     }
 }
 
-// Get particle count
 export function getCount() {
     return particles.length;
 }
-
-export default {
-    initParticles,
-    burst,
-    stop,
-    getCount
-};

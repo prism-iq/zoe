@@ -1,0 +1,24 @@
+[package]
+name = "zoe"
+version = "3.0.0"
+edition = "2021"
+description = "ZOE - Where Programs Live - Pantheon web interface daemon (Rust/axum)"
+
+[[bin]]
+name = "zoe"
+path = "src/main.rs"
+
+[dependencies]
+axum = { version = "0.8", features = ["ws", "json"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tower-http = { version = "0.6", features = ["cors", "fs"] }
+tower = "0.5"
+reqwest = { version = "0.12", features = ["json"] }
+futures = "0.3"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
